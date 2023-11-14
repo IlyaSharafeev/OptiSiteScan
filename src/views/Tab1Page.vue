@@ -1,8 +1,13 @@
 <template>
   <ion-page>
     <ion-header>
-      <ion-toolbar>
-        <ion-title>Scan</ion-title>
+      <ion-toolbar class="toolbar">
+        <ion-title>O.S.S.</ion-title>
+        <ion-buttons slot="start">
+          <ion-button>
+            <ion-icon :icon="logoIonic"></ion-icon>
+          </ion-button>
+        </ion-buttons>
       </ion-toolbar>
     </ion-header>
     <ion-content :fullscreen="true" class="ion-padding ion-text-center">
@@ -26,6 +31,12 @@
         </ion-row>
       </ion-toolbar>
     </ion-footer>
+    <ion-alert
+        :is-open="isOpen"
+        :sub-header="textALert"
+        :buttons="alertButtons"
+        @didDismiss="setOpen(false)"
+    ></ion-alert>
   </ion-page>
 </template>
 
@@ -43,13 +54,27 @@ import {
   IonRow,
   IonFooter,
   IonIcon,
+    IonAlert,
+    IonButtons,
 } from '@ionic/vue';
-import {logoBuffer, searchOutline} from "ionicons/icons";
+import {logoBuffer, logoIonic, searchOutline} from "ionicons/icons";
 import {ref} from "vue";
 import {useSearchStore} from "@/stores/main";
 
 const searchStore = useSearchStore();
 const inputData = ref('');
+
+
+const isOpen = ref(false);
+const textALert = ref('');
+const alertButtons = ['OK'];
+
+const setOpen = (state: boolean, message?: string) => {
+  if(message) {
+    textALert.value = message
+  }
+  isOpen.value = state;
+};
 
 const isValidUrl = (string: string) => {
   try {
@@ -68,9 +93,14 @@ const isValidUrl = (string: string) => {
 const pasteFromClipboard = async () => {
   try {
     const copyText = await navigator.clipboard.readText();
+    console.log(copyText);
+    if(copyText.trim() === "") {
+      setOpen(true, "Buffer is empty!")
+    }
     if(isValidUrl(copyText)) {
       inputData.value = copyText;
     } else {
+      setOpen(true, "Link is not valid!");
       console.error('Error when pasting from clipboard (it\'s not a link):' + copyText);
     }
   } catch (err) {
@@ -79,7 +109,11 @@ const pasteFromClipboard = async () => {
 }
 
 const scanLink = () => {
-  searchStore.scanURL(inputData.value);
+  if(isValidUrl(inputData.value)) {
+    searchStore.scanURL(inputData.value);
+  } else {
+    setOpen(true, "Link is not valid!")
+  }
 }
 </script>
 
@@ -97,5 +131,10 @@ ion-item {
   width: 100%; /* Можно задать конкретную ширину, если нужно */
   padding: 0 10px;
   --border-radius: 10px;
+}
+
+ion-title {
+  padding-inline: 0 !important;
+  text-transform: uppercase !important;
 }
 </style>
