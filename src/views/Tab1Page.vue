@@ -11,9 +11,9 @@
       </ion-toolbar>
     </ion-header>
     <ion-content :fullscreen="true" class="ion-padding ion-text-center">
-      <ion-item lines="none">
-        <ion-input v-model="inputData"></ion-input>
-      </ion-item>
+        <ion-item lines="none">
+          <ion-input v-model="inputData"></ion-input>
+        </ion-item>
     </ion-content>
     <ion-footer>
       <ion-toolbar>
@@ -60,6 +60,7 @@ import {
 import {logoBuffer, logoIonic, searchOutline} from "ionicons/icons";
 import {ref} from "vue";
 import {useSearchStore} from "@/stores/main";
+import { Clipboard } from '@capacitor/clipboard';
 
 const searchStore = useSearchStore();
 const inputData = ref('');
@@ -92,12 +93,12 @@ const isValidUrl = (string: string) => {
 
 const pasteFromClipboard = async () => {
   try {
-    const copyText = await navigator.clipboard.readText();
-    console.log(copyText);
-    if(copyText.trim() === "") {
+    const { value: copyText } = await Clipboard.read();
+
+    if (copyText.trim() === "") {
       setOpen(true, "Buffer is empty!")
     }
-    if(isValidUrl(copyText)) {
+    if (isValidUrl(copyText)) {
       inputData.value = copyText;
     } else {
       setOpen(true, "Link is not valid!");

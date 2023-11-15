@@ -27,7 +27,10 @@ import './theme/variables.css';
 const pinia = createPinia();
 
 const app = createApp(App)
-  .use(IonicVue)
+  .use(IonicVue, {
+    mode: 'md',
+    colorScheme: 'dark',
+  })
   .use(router)
     .use(pinia)
 
