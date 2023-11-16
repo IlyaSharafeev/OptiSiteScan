@@ -59,10 +59,8 @@ import {
 } from '@ionic/vue';
 import {logoBuffer, logoIonic, searchOutline} from "ionicons/icons";
 import {ref} from "vue";
-import {useSearchStore} from "@/stores/main";
 import { Clipboard } from '@capacitor/clipboard';
 
-const searchStore = useSearchStore();
 const inputData = ref('');
 
 
