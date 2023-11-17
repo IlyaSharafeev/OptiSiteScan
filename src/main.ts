@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router';
 import { createPinia } from 'pinia';
-
+import VueApexCharts from 'vue3-apexcharts';
 import { IonicVue } from '@ionic/vue';
 
 /* Core CSS required for Ionic components to work properly */
@@ -33,6 +33,9 @@ const app = createApp(App)
   })
   .use(router)
     .use(pinia)
+
+
+app.component('apexchart', VueApexCharts);
 
 router.isReady().then(() => {
   app.mount('#app');

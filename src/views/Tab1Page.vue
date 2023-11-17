@@ -13,6 +13,12 @@
     <ion-content :fullscreen="true" class="ion-padding ion-text-center">
         <ion-item lines="none">
           <ion-input v-model="inputData"></ion-input>
+          <ion-icon
+              v-show="inputData"
+              :icon="closeOutline"
+              slot="end"
+              @click="inputData = ''"
+          ></ion-icon>
         </ion-item>
     </ion-content>
     <ion-footer>
@@ -28,9 +34,18 @@
               <ion-icon aria-hidden="true" :icon="searchOutline" />
             </ion-button>
           </ion-col>
+
+          <ion-col size="12">
+            <ion-button @click="openCamera" expand="block">
+              <ion-icon aria-hidden="true" :icon="camera"/>
+            </ion-button>
+          </ion-col>
         </ion-row>
       </ion-toolbar>
     </ion-footer>
+    <div v-if="isLoading" class="spinner-overlay">
+      <ion-spinner name="lines"></ion-spinner>
+    </div>
     <ion-alert
         :is-open="isOpen"
         :sub-header="textALert"
@@ -56,15 +71,23 @@ import {
   IonIcon,
     IonAlert,
     IonButtons,
+  IonSpinner,
 } from '@ionic/vue';
-import {logoBuffer, logoIonic, searchOutline} from "ionicons/icons";
+import {logoBuffer, logoIonic, searchOutline, closeOutline, camera} from "ionicons/icons";
 import {ref} from "vue";
 import { Clipboard } from '@capacitor/clipboard';
+import {useSearchStore} from "@/stores/main";
+import {useRouter} from 'vue-router';
+import {Camera, CameraResultType} from '@capacitor/camera';
+import Tesseract from 'tesseract.js';
+
+const router = useRouter();
 
 const inputData = ref('');
-
+const searchStore = useSearchStore();
 
 const isOpen = ref(false);
+const isLoading = ref(false);
 const textALert = ref('');
 const alertButtons = ['OK'];
 
@@ -110,10 +133,40 @@ const pasteFromClipboard = async () => {
 const scanLink = () => {
   if(isValidUrl(inputData.value)) {
     searchStore.scanURL(inputData.value);
+    router.push({name: "tab2"});
   } else {
     setOpen(true, "Link is not valid!")
   }
 }
+
+const openCamera = async () => {
+  isLoading.value = true;
+  try {
+    const image = await Camera.getPhoto({
+      quality: 90,
+      allowEditing: false,
+      resultType: CameraResultType.Uri
+    });
+
+    // После получения изображения, используйте Tesseract для распознавания текста
+    Tesseract.recognize(
+        image.webPath,
+        'eng',
+        {
+          logger: (m: any) => console.log(m)
+        }
+    ).then(({data: {text}}) => {
+      console.log(text)
+      // Проверьте, содержит ли текст ссылку, и обновите inputData
+      // Это простая проверка, возможно, вам понадобится более сложная логика
+      if (text.includes('http')) {
+        inputData.value = text;
+      }
+    });
+  } finally {
+    isLoading.value = false
+  }
+};
 </script>
 
 <style scoped>

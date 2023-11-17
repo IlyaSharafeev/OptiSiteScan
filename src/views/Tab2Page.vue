@@ -1,12 +1,25 @@
 <template>
   <ion-page>
     <ion-header>
-      <ion-toolbar>
-        <ion-title>Audit Data</ion-title>
-      </ion-toolbar>
+<!--      <ion-toolbar>-->
+<!--        <ion-title>Audit Data</ion-title>-->
+<!--      </ion-toolbar>-->
+      <ion-segment v-model="activeTab">
+        <ion-segment-button value="charts">
+          <ion-label>Charts</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="list">
+          <ion-label>List</ion-label>
+        </ion-segment-button>
+      </ion-segment>
     </ion-header>
-    <ion-content :scroll-events="true" @ionScroll="checkScroll">
-      <div v-for="(item, index) in auditItems" :key="index">
+    <ion-content :scroll-events="true" @ionScroll="checkScroll" ref="content">
+      <div v-if="activeTab === 'charts'">
+        <DonutChart/>
+        <ReversedBarChart/>
+      </div>
+      <div v-if="activeTab === 'list'">
+        <div v-for="(item, index) in auditItems" :key="index">
         <ion-item @click="toggleDetails(item.id)">
           <ion-label class="" style="display: flex; justify-content: space-between">
             <h2>{{ item.title }}</h2>
@@ -18,6 +31,7 @@
             <p v-html="linkify(item.description)"></p>
           </ion-card-content>
         </ion-card>
+      </div>
       </div>
 
       <ion-fab vertical="bottom" horizontal="end" slot="fixed" v-show="showScrollTop">
@@ -40,14 +54,22 @@ import {
   IonLabel,
   IonCard,
   IonCardContent,
-  IonIcon
+  IonIcon,
+  IonFab,
+  IonFabButton,
+    IonSegment,
+    IonSegmentButton,
 } from '@ionic/vue';
 import {reactive, computed, ref} from 'vue';
 import {useSearchStore} from "@/stores/main.ts";
 import {arrowUpOutline} from 'ionicons/icons';
+import DonutChart from "@/components/DonutChart.vue";
+import ReversedBarChart from "@/components/ReversedBarChart.vue";
 
 const searchStore = useSearchStore();
 const showScrollTop = ref(false);
+const content = ref(null);
+const activeTab = ref('charts'); // Начальная вкладка
 
 const auditItems = computed(() => Object.values(searchStore.tempData.lighthouseResult.audits));
 const openedItemId = ref(null);
@@ -68,13 +90,15 @@ const toggleDetails = (id) => {
 };
 
 const checkScroll = (event) => {
-  console.log(event.detail.scrollTop);
   showScrollTop.value = event.detail.scrollTop > 200;
 };
 
 const scrollTop = () => {
-  const content = document.querySelector('ion-content');
-  content.scrollToTop(500);
+  if (content.value && content.value.$el && typeof content.value.$el.scrollToTop === 'function') {
+    content.value.$el.scrollToTop(500);
+  } else {
+    console.error('Method scrollToTop is not available');
+  }
 };
 
 const linkify = (text) => {
