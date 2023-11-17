@@ -78,8 +78,8 @@ import {ref} from "vue";
 import { Clipboard } from '@capacitor/clipboard';
 import {useSearchStore} from "@/stores/main";
 import {useRouter} from 'vue-router';
-import {Camera, CameraResultType} from '@capacitor/camera';
-import Tesseract from 'tesseract.js';
+import axios from 'axios';
+import { Camera, CameraResultType } from '@capacitor/camera';
 
 const router = useRouter();
 
@@ -140,31 +140,43 @@ const scanLink = () => {
 }
 
 const openCamera = async () => {
-  isLoading.value = true;
   try {
-    const image = await Camera.getPhoto({
+    const photo = await Camera.getPhoto({
       quality: 90,
       allowEditing: false,
-      resultType: CameraResultType.Uri
+      resultType: CameraResultType.Base64
     });
 
-    // После получения изображения, используйте Tesseract для распознавания текста
-    Tesseract.recognize(
-        image.webPath,
-        'eng',
+    isLoading.value = true; // Включаем спиннер
+
+    const base64Image = photo.base64String;
+
+    const response = await axios.post(
+        'https://vision.googleapis.com/v1/images:annotate?key=AIzaSyDXnQe-nYOsKG4v2-AnZ-Tmu6-G5Da-5g4',
         {
-          logger: (m: any) => console.log(m)
+          requests: [
+            {
+              image: {
+                content: base64Image
+              },
+              features: [{ type: 'TEXT_DETECTION' }]
+            }
+          ]
         }
-    ).then(({data: {text}}) => {
-      console.log(text)
-      // Проверьте, содержит ли текст ссылку, и обновите inputData
-      // Это простая проверка, возможно, вам понадобится более сложная логика
-      if (text.includes('http')) {
-        inputData.value = text;
-      }
-    });
+    );
+
+    // Проверяем, есть ли данные о распознавании текста в ответе
+    if (response.data.responses[0] && response.data.responses[0].fullTextAnnotation) {
+      const detectedText = response.data.responses[0].fullTextAnnotation.text;
+      inputData.value = detectedText; // Обновляем поле ввода
+    } else {
+      console.error('Текст не обнаружен');
+      inputData.value = ''; // Очищаем поле ввода
+    }
+  } catch (err) {
+    console.error('Ошибка при использовании камеры или при распознавании текста:', err);
   } finally {
-    isLoading.value = false
+    isLoading.value = false; // Выключаем спиннер
   }
 };
 </script>
@@ -188,5 +200,18 @@ ion-item {
 ion-title {
   padding-inline: 0 !important;
   text-transform: uppercase !important;
+}
+
+.spinner-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.5); /* Полупрозрачный фон */
+  z-index: 1000; /* Убедитесь, что спиннер находится над всеми элементами */
 }
 </style>
