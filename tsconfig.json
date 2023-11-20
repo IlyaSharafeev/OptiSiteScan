@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "allowJs": true,
+    "allowImportingTsExtensions": true,
     "target": "ESNext",
     "useDefineForClassFields": true,
     "module": "ESNext",
