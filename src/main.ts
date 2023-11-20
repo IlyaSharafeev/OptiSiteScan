@@ -34,7 +34,6 @@ const app = createApp(App)
   .use(router)
     .use(pinia)
 
-
 app.component('apexchart', VueApexCharts);
 
 router.isReady().then(() => {
