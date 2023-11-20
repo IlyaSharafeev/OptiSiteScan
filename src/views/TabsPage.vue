@@ -12,7 +12,7 @@
         </ion-tab-button>
 
         <ion-tab-button tab="tab3" href="/tabs/tab3">
-          <ion-icon aria-hidden="true" :icon="lockClosedOutline" />
+          <ion-icon aria-hidden="true" :icon="person" />
         </ion-tab-button>
       </ion-tab-bar>
     </ion-tabs>
@@ -22,14 +22,11 @@
 <script setup lang="ts">
 import { IonTabBar, IonTabButton, IonTabs, IonLabel, IonIcon, IonPage, IonRouterOutlet } from '@ionic/vue';
 import {
-  square,
-  triangle,
-  images,
-  heartCircle,
-  search,
-  searchCircle,
-  searchOutline,
   scanOutline,
-  statsChart, lockClosed, lockClosedOutline
+  statsChart,
+  person,
 } from 'ionicons/icons';
+import {useSearchStore} from "@/stores/main.ts";
+
+const searchStore = useSearchStore();
 </script>

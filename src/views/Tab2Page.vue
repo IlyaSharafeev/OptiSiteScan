@@ -1,10 +1,7 @@
 <template>
   <ion-page>
     <ion-header>
-<!--      <ion-toolbar>-->
-<!--        <ion-title>Audit Data</ion-title>-->
-<!--      </ion-toolbar>-->
-      <ion-segment v-model="activeTab">
+      <ion-segment v-if="searchStore.searchData" v-model="activeTab">
         <ion-segment-button value="charts">
           <ion-label>Charts</ion-label>
         </ion-segment-button>
@@ -13,7 +10,7 @@
         </ion-segment-button>
       </ion-segment>
     </ion-header>
-    <ion-content :scroll-events="true" @ionScroll="checkScroll" ref="content">
+    <ion-content v-if="searchStore.searchData" :scroll-events="true" @ionScroll="checkScroll" ref="content">
       <div v-if="activeTab === 'charts'">
         <DonutChart/>
         <ReversedBarChart/>
@@ -40,6 +37,11 @@
         </ion-fab-button>
       </ion-fab>
     </ion-content>
+    <ion-content v-else>
+      <div class="spinner-container">
+        <ion-spinner name="crescent"></ion-spinner>
+      </div>
+    </ion-content>
   </ion-page>
 </template>
 
@@ -59,6 +61,7 @@ import {
   IonFabButton,
     IonSegment,
     IonSegmentButton,
+  IonSpinner
 } from '@ionic/vue';
 import {reactive, computed, ref} from 'vue';
 import {useSearchStore} from "@/stores/main.ts";
@@ -71,14 +74,21 @@ const showScrollTop = ref(false);
 const content = ref(null);
 const activeTab = ref('charts'); // Начальная вкладка
 
-const auditItems = computed(() => Object.values(searchStore.tempData.lighthouseResult.audits));
+const auditItems = computed(() => {
+  if (searchStore.searchData) {
+    Object.values(searchStore.searchData)
+  }
+});
 const openedItemId = ref(null);
 
 // Создание реактивного объекта для отслеживания состояния деталей
 const detailsState = reactive({});
-auditItems.value.forEach(item => {
-  detailsState[item.id] = false;
-});
+
+if (auditItems.value) {
+  auditItems.value.forEach(item => {
+    detailsState[item.id] = false;
+  });
+}
 
 // Переключение видимости деталей
 const toggleDetails = (id) => {
@@ -108,3 +118,14 @@ const linkify = (text) => {
   });
 };
 </script>
+
+<style scoped>
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: calc(100vh - 57px); /* 50px - предполагаемая высота шапки */
+  width: 100%;
+  overflow: hidden; /* Предотвращение появления скроллбара */
+}
+</style>

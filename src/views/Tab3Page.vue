@@ -1,41 +1,7 @@
 <template>
   <ion-page>
     <ion-content class="ion-padding content">
-      <div class="form-container">
-        <h2 class="form-header">Welcome to O.S.S.</h2>
-
-        <form v-if="showSignIn" @submit.prevent="handleSignIn" class="auth-form">
-          <ion-list lines="none">
-            <ion-item>
-              <ion-input type="text" placeholder="Username" required></ion-input>
-            </ion-item>
-            <ion-item>
-              <ion-input type="password" placeholder="Password" required></ion-input>
-            </ion-item>
-          </ion-list>
-          <ion-button type="submit" expand="block" class="auth-button">Sign In</ion-button>
-          <p class="toggle-form" @click="toggleForm">Don't have an account? Sign Up</p>
-        </form>
-
-        <form v-else @submit.prevent="handleSignUp" class="auth-form">
-          <ion-list lines="none">
-            <ion-item>
-              <ion-input type="email" placeholder="Email" required></ion-input>
-            </ion-item>
-            <ion-item>
-              <ion-input type="text" placeholder="Username" required></ion-input>
-            </ion-item>
-            <ion-item>
-              <ion-input type="password" placeholder="Password" required></ion-input>
-            </ion-item>
-            <ion-item>
-              <ion-input type="password" placeholder="Confirm Password" required></ion-input>
-            </ion-item>
-          </ion-list>
-          <ion-button type="submit" expand="block" class="auth-button">Sign Up</ion-button>
-          <p class="toggle-form" @click="toggleForm">Already have an account? Sign In</p>
-        </form>
-      </div>
+      <div v-if="searchStore.tokenStore"><h1>in progress</h1></div>
     </ion-content>
   </ion-page>
 </template>
@@ -45,25 +11,12 @@ import { ref } from 'vue';
 import {
   IonContent,
   IonPage,
-  IonList,
   IonItem,
   IonInput,
-  IonButton
 } from '@ionic/vue';
+import {useSearchStore} from "@/stores/main.ts";
 
-const showSignIn = ref(true);
-
-const handleSignIn = () => {
-  // Обработчик для входа
-};
-
-const handleSignUp = () => {
-  // Обработчик для регистрации
-};
-
-const toggleForm = () => {
-  showSignIn.value = !showSignIn.value;
-};
+const searchStore = useSearchStore();
 </script>
 
 <style scoped>
