@@ -1,17 +1,37 @@
 <template>
   <ion-page>
     <ion-header>
-      <ion-segment v-model="activeTab">
-        <ion-segment-button value="charts">
-          <ion-label>Charts</ion-label>
-        </ion-segment-button>
+      <ion-segment color="secondary" mode="md" v-model="activeTab">
         <ion-segment-button value="list">
-          <ion-label>List</ion-label>
+          <ion-label>accessibility</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="performance">
+          <ion-label>performance</ion-label>
         </ion-segment-button>
       </ion-segment>
     </ion-header>
     <ion-content v-if="searchStore.searchData && !searchStore.isLoading" :scroll-events="true" @ionScroll="checkScroll" ref="content">
-      <div v-if="activeTab === 'charts'">
+      <div v-if="activeTab === 'performance'">
+        <ion-card v-for="(value, key) in performanceData" :key="key">
+          <ion-card-header>
+            <ion-card-title>{{ formatTitle(key) }}</ion-card-title>
+          </ion-card-header>
+          <ion-card-content>
+            <ion-chip :color="getCategoryColor(value.category)">
+              <ion-icon :icon="getCategoryIcon(value.category)"></ion-icon>
+              <ion-label>{{ value.category }}</ion-label>
+            </ion-chip>
+            <div class="percentile">Percentile: {{ value.percentile }}</div>
+            <ion-list>
+              <ion-item v-for="(distribution, index) in value.distributions" :key="index">
+                <ion-label>
+                  <p>Min: {{ distribution.min }} Max: {{ distribution.max || 'N/A' }}</p>
+                  <p>Proportion: {{ formatNumber(distribution.proportion) }}</p>
+                </ion-label>
+              </ion-item>
+            </ion-list>
+          </ion-card-content>
+        </ion-card>
       </div>
       <div v-if="activeTab === 'list'">
         <div v-for="(item, index) in auditItems" :key="index">
@@ -48,25 +68,24 @@
 import {
   IonPage,
   IonHeader,
-  IonToolbar,
-  IonTitle,
   IonContent,
   IonItem,
   IonLabel,
   IonCard,
   IonCardContent,
+  IonCardHeader,
+  IonList,
   IonIcon,
   IonFab,
   IonFabButton,
-    IonSegment,
-    IonSegmentButton,
-  IonSpinner
+  IonSegment,
+  IonSegmentButton,
+  IonCardTitle,
+  IonChip,
 } from '@ionic/vue';
 import {computed, ref} from 'vue';
 import {useSearchStore} from "@/stores/main.ts";
-import {arrowUpOutline} from 'ionicons/icons';
-import DonutChart from "@/components/DonutChart.vue";
-import ReversedBarChart from "@/components/ReversedBarChart.vue";
+import {speedometerOutline, hourglassOutline, timeOutline , helpCircleOutline, arrowUpOutline} from 'ionicons/icons';
 import {useRouter} from "vue-router";
 
 const searchStore = useSearchStore();
@@ -76,6 +95,7 @@ const router = useRouter();
 const activeTab = ref('charts'); // Начальная вкладка
 
 const auditItems = computed(() => searchStore.searchData[0].lighthouseResult.audits);
+const performanceData = computed(() => searchStore.searchData[0].originLoadingExperience.metrics);
 const openedItemId = ref(null);
 
 // Переключение видимости деталей
@@ -105,6 +125,32 @@ const linkify = (text) => {
     return `<a href="${url}" target="_blank">${url}</a>`;
   });
 };
+
+const formatTitle = (key) => {
+  return key.replace(/_/g, ' ').toUpperCase();
+};
+
+const getCategoryColor = (category) => {
+  switch (category) {
+    case 'FAST': return 'success';
+    case 'AVERAGE': return 'warning';
+    case 'SLOW': return 'danger';
+    default: return 'medium';
+  }
+};
+
+const getCategoryIcon = (category) => {
+  switch (category) {
+    case 'FAST': return speedometerOutline;
+    case 'AVERAGE': return hourglassOutline;
+    case 'SLOW': return timeOutline;
+    default: return helpCircleOutline;
+  }
+};
+
+const formatNumber = (number) => {
+  return new Intl.NumberFormat().format(number);
+};
 </script>
 
 <style scoped>
@@ -116,18 +162,18 @@ const linkify = (text) => {
   gap: 10px;
   height: 100%; /* Высота контейнера */
   text-align: center; /* Центрирование текста на всякий случай */
-  color: #484848;
+  color: #5A5A5A; /* Обновленный цвет текста */
 }
 
 .button-30 {
   align-items: center;
   appearance: none;
-  background-color: #FCFCFD;
+  background-color: #F0F0F0; /* Обновленный фон */
   border-radius: 4px;
   border-width: 0;
   box-shadow: rgba(45, 35, 66, 0.4) 0 2px 4px, rgba(45, 35, 66, 0.3) 0 7px 13px -3px, #D6D6E7 0 -3px 0 inset;
   box-sizing: border-box;
-  color: #36395A;
+  color: #5A5A5A; /* Обновленный цвет текста */
   cursor: pointer;
   display: inline-flex;
   font-family: 'Kdam Thmor Pro', sans-serif;
@@ -141,7 +187,7 @@ const linkify = (text) => {
   position: relative;
   text-align: left;
   text-decoration: none;
-  transition: box-shadow .15s, transform .15s;
+  transition: background-color .3s, color .3s, transform .2s; /* Добавление анимации */
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
@@ -158,11 +204,92 @@ const linkify = (text) => {
 
 .button-30:hover {
   box-shadow: rgba(45, 35, 66, 0.4) 0 4px 8px, rgba(45, 35, 66, 0.3) 0 7px 13px -3px, #D6D6E7 0 -3px 0 inset;
-  transform: translateY(-2px);
+  transform: scale(1.05); /* Эффект увеличения при наведении */
 }
 
 .button-30:active {
   box-shadow: #D6D6E7 0 3px 7px inset;
   transform: translateY(2px);
+}
+
+.performance-card {
+  margin: 10px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.performance-card-header {
+  background-color: #f4f4f4;
+  color: #333;
+  font-weight: bold;
+  padding: 15px;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.performance-card-content {
+  padding: 15px;
+}
+
+.performance-metric {
+  font-size: 0.9em;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.performance-distribution {
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.performance-chip {
+  font-size: 0.8em;
+  margin-right: 5px;
+}
+
+.performance-chip ion-icon {
+  font-size: 1.2em;
+  vertical-align: middle;
+  margin-right: 2px;
+}
+
+.score {
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-weight: bold;
+  color: #624848; /* Обновленный цвет текста */
+}
+
+ion-card {
+  margin: 10px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+ion-chip {
+  background-color: #353535;
+  border: none;
+  font-size: 0.9em;
+}
+
+ion-chip ion-icon {
+  font-size: 1.2em;
+  vertical-align: middle;
+  margin-right: 5px;
+}
+
+ion-item {
+  transition: transform .2s;
+}
+
+ion-item:hover {
+  transform: scale(1.05);
+}
+
+.percentile {
+  padding-top: 15px;
 }
 </style>
