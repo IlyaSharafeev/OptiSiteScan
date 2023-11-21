@@ -1,7 +1,7 @@
 <template>
   <ion-page>
     <ion-content class="ion-padding content">
-      <div v-if="searchStore.tokenStore"><h1>in progress</h1></div>
+      <div><h1>in progress</h1></div>
     </ion-content>
   </ion-page>
 </template>

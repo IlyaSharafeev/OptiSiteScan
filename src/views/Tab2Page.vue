@@ -10,14 +10,12 @@
         </ion-segment-button>
       </ion-segment>
     </ion-header>
-    <ion-content v-if="searchStore.searchData" :scroll-events="true" @ionScroll="checkScroll" ref="content">
+    <ion-content v-if="searchStore.searchData && !searchStore.isLoading" :scroll-events="true" @ionScroll="checkScroll" ref="content">
       <div v-if="activeTab === 'charts'">
-        <DonutChart/>
-        <ReversedBarChart/>
       </div>
       <div v-if="activeTab === 'list'">
         <div v-for="(item, index) in auditItems" :key="index">
-        <ion-item @click="toggleDetails(item.id)">
+        <ion-item @click="toggleDetails(item.id)" v-if="item.score !== null && item.score !== 1 && item.score !== 0">
           <ion-label class="" style="display: flex; justify-content: space-between">
             <h2>{{ item.title }}</h2>
             <p v-if="item.score !== null && item.score !== 1 && item.score !== 0" class="score" style="min-width: 55px">{{ item.score }} ms</p>
@@ -38,9 +36,9 @@
       </ion-fab>
     </ion-content>
     <ion-content v-else class="ion-padding">
-      <div class="centered-content">
+      <div v-if="!searchStore.isLoading" class="centered-content">
         <h1 class="ion-color-tertiary">to get the stats, you'll need to do a scan</h1>
-        <button class="button-30" role="button">Scan</button>
+        <button class="button-30" role="button" @click="router.push({name: 'tab1'});">Scan</button>
       </div>
     </ion-content>
   </ion-page>
@@ -64,32 +62,21 @@ import {
     IonSegmentButton,
   IonSpinner
 } from '@ionic/vue';
-import {reactive, computed, ref} from 'vue';
+import {computed, ref} from 'vue';
 import {useSearchStore} from "@/stores/main.ts";
 import {arrowUpOutline} from 'ionicons/icons';
 import DonutChart from "@/components/DonutChart.vue";
 import ReversedBarChart from "@/components/ReversedBarChart.vue";
+import {useRouter} from "vue-router";
 
 const searchStore = useSearchStore();
 const showScrollTop = ref(false);
 const content = ref(null);
+const router = useRouter();
 const activeTab = ref('charts'); // Начальная вкладка
 
-const auditItems = computed(() => {
-  if (searchStore.searchData) {
-    Object.values(searchStore.searchData)
-  }
-});
+const auditItems = computed(() => searchStore.searchData[0].lighthouseResult.audits);
 const openedItemId = ref(null);
-
-// Создание реактивного объекта для отслеживания состояния деталей
-const detailsState = reactive({});
-
-if (auditItems.value) {
-  auditItems.value.forEach(item => {
-    detailsState[item.id] = false;
-  });
-}
 
 // Переключение видимости деталей
 const toggleDetails = (id) => {
@@ -162,6 +149,7 @@ const linkify = (text) => {
   will-change: box-shadow, transform;
   font-size: 18px;
   text-transform: uppercase;
+  letter-spacing: 4px;
 }
 
 .button-30:focus {

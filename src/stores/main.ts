@@ -10,13 +10,17 @@ export const useSearchStore = defineStore("search", () => {
     const isLoading = ref(false);
 
     const scanURL = async (link: string) => {
+        isLoading.value = true;
         try {
             const response = await axios.post('https://opti-site-scan-backend.onrender.com/', { link });
             searchData.value = Object.values(response.data);
+            console.log(response.data);
             console.log(searchData.value);
+            isLoading.value = false;
             return response.data;
         } catch (error) {
             console.error('Error scanning URL:', error);
+            isLoading.value = false;
             return null;
         }
     };

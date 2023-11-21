@@ -30,7 +30,6 @@
     "chart.js": "^4.4.0",
     "ionicons": "^7.0.0",
     "pinia": "^2.1.7",
-    "tesseract.js": "^5.0.3",
     "vue": "^3.2.45",
     "vue-apexcharts": "^1.6.2",
     "vue-router": "^4.1.6",
