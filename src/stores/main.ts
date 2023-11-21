@@ -6,7 +6,7 @@ import { Preferences } from '@capacitor/preferences';
 
 export const useSearchStore = defineStore("search", () => {
     const router = useRouter();
-    const searchData = ref(null);
+    const searchData = ref<unknown[] | null>(null);
     const isLoading = ref(false);
 
     const scanURL = async (link: string) => {
