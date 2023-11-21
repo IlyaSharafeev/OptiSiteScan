@@ -49,14 +49,14 @@ const router = createRouter({
   routes
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const searchStore = useSearchStore();
 
   // Проверка, требует ли маршрут аутентификации
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
 
   // Проверка, аутентифицирован ли пользователь
-  const isAuthenticated = searchStore.tokenStore;
+  const isAuthenticated = await searchStore.getToken();
 
   if (requiresAuth && !isAuthenticated) {
     // Перенаправление на страницу входа, только если пользователь не на ней

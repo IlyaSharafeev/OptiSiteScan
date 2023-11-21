@@ -59,17 +59,18 @@ const password = ref('');
 const apiUrl = 'https://strapi-optiscan.onrender.com';
 
 const handleSignIn = async () => {
+  searchStore.isLoading = true;
   try {
     const response = await axios.post(`${apiUrl}/api/auth/local`, {
       identifier: email.value,
       password: password.value
     });
     await searchStore.saveToken(response.data.jwt);
-    console.log('User profile', response.data.user);
-    console.log('User token', response.data.jwt);
+    searchStore.isLoading = false;
     // Обработайте успешный вход (например, сохраните токен и перенаправьте пользователя)
   } catch (error) {
     console.error('Error during sign in:', error.response);
+    searchStore.isLoading = false;
     // Обработайте ошибки входа
   }
 };
