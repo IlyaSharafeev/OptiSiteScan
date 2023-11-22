@@ -31,7 +31,7 @@
             </ion-item>
             <div v-if="usernameError" class="error-message">{{ usernameError }}</div>
             <ion-item>
-              <ion-input type="password" placeholder="Password" v-model="password"></ion-input>
+              <ion-input :type="showPassword ? 'text' : 'password'" placeholder="Password" v-model="password"></ion-input>
               <ion-icon :icon="showPassword ? eyeOff : eye" slot="end" @click="showPassword = !showPassword"></ion-icon>
             </ion-item>
             <div v-if="passwordError" class="error-message">{{ passwordError }}</div>
