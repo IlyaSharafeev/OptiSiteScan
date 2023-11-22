@@ -2,16 +2,19 @@
   <ion-page>
     <ion-content class="ion-padding content">
       <div class="form-container">
-        <h2 class="form-header">Welcome to O.S.S.</h2>
+        <h2 class="form-header">Welcome to <span style="color: lavender; letter-spacing: 4px">Opti Scan</span></h2>
 
         <form v-if="showSignIn" @submit.prevent="handleSignIn" class="auth-form">
           <ion-list lines="none">
             <ion-item>
-              <ion-input type="text" placeholder="Email" v-model="email" required></ion-input>
+              <ion-input type="email" placeholder="Email" v-model="email"></ion-input>
             </ion-item>
+            <div v-if="emailError" class="error-message">{{ emailError }}</div>
             <ion-item>
-              <ion-input type="password" placeholder="Password" v-model="password" required></ion-input>
+              <ion-input :type="showPassword ? 'text' : 'password'" placeholder="Password" v-model="password"></ion-input>
+              <ion-icon :icon="showPassword ? eyeOff : eye" slot="end" @click="showPassword = !showPassword"></ion-icon>
             </ion-item>
+            <div v-if="passwordError" class="error-message">{{ passwordError }}</div>
           </ion-list>
           <ion-button type="submit" expand="block" class="auth-button">Sign In</ion-button>
           <p class="toggle-form" @click="toggleForm">Don't have an account? Sign Up</p>
@@ -20,14 +23,18 @@
         <form v-else @submit.prevent="handleSignUp" class="auth-form">
           <ion-list lines="none">
             <ion-item>
-              <ion-input type="email" placeholder="Email" v-model="email" required></ion-input>
+              <ion-input type="email" placeholder="Email" v-model="email"></ion-input>
             </ion-item>
+            <div v-if="emailError" class="error-message">{{ emailError }}</div>
             <ion-item>
-              <ion-input type="text" placeholder="Username" v-model="username" required></ion-input>
+              <ion-input type="text" placeholder="Username" v-model="username"></ion-input>
             </ion-item>
+            <div v-if="usernameError" class="error-message">{{ usernameError }}</div>
             <ion-item>
-              <ion-input type="password" placeholder="Password" v-model="password" required></ion-input>
+              <ion-input type="password" placeholder="Password" v-model="password"></ion-input>
+              <ion-icon :icon="showPassword ? eyeOff : eye" slot="end" @click="showPassword = !showPassword"></ion-icon>
             </ion-item>
+            <div v-if="passwordError" class="error-message">{{ passwordError }}</div>
           </ion-list>
           <ion-button type="submit" expand="block" class="auth-button">Sign Up</ion-button>
           <p class="toggle-form" @click="toggleForm">Already have an account? Sign In</p>
@@ -38,25 +45,59 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import {ref, watch} from 'vue';
 import {
   IonContent,
   IonPage,
   IonList,
   IonItem,
   IonInput,
-  IonButton
+  IonButton,
+  IonIcon,
 } from '@ionic/vue';
-import axios from "axios";
 import {useSearchStore} from "@/stores/main.ts";
+import { eye, eyeOff } from 'ionicons/icons';
+import axios from "axios";
 
-const searchStore = useSearchStore();
-
-const showSignIn = ref(true);
-const username = ref('');
 const email = ref('');
 const password = ref('');
+const username = ref('');
+const emailError = ref('');
+const passwordError = ref('');
+const usernameError = ref('');
+const searchStore = useSearchStore();
+const showSignIn = ref(true);
+const showPassword = ref(false);
 const apiUrl = 'https://strapi-optiscan.onrender.com';
+
+watch(email, (newEmail) => {
+  emailError.value = validateEmail(newEmail);
+});
+
+watch(password, (newPassword) => {
+  passwordError.value = validatePassword(newPassword);
+});
+
+watch(username, (newUsername) => {
+  usernameError.value = validateUsername(newUsername);
+});
+
+const validateEmail = (newEmail) => {
+  if (!newEmail) return "Email is required";
+  if (!/^\S+@\S+\.\S+$/.test(newEmail)) return "Invalid email format";
+  return '';
+};
+
+const validatePassword = (newPassword) => {
+  if (!newPassword) return "Password is required";
+  if (newPassword.length < 6) return "Password must be at least 6 characters";
+  return '';
+};
+
+const validateUsername = (newUsername) => {
+  if (!newUsername) return "Username is required";
+  return '';
+};
 
 const handleSignIn = async () => {
   searchStore.isLoading = true;
@@ -160,5 +201,11 @@ ion-input {
 
 .list-md {
   background: none;
+}
+
+.error-message {
+  color: red;
+  font-size: 0.8rem;
+  margin-top: 0.5rem;
 }
 </style>

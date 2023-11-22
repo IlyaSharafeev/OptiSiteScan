@@ -41,7 +41,7 @@ export const useSearchStore = defineStore("search", () => {
     };
 
     const removeToken = async () => {
-        await Preferences.remove({ key: 'my_token' });
+        await Preferences.remove({ key: 'token' });
     };
 
     return {
