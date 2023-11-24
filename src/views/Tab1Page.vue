@@ -182,9 +182,7 @@ const clearHistoryConfirmed = () => {
 };
 
 const updateMenuPosition = () => {
-  if (!ellipsisButtonRef.value || !clearMenuRef.value) return;
-
-  const buttonRect = ellipsisButtonRef.value.$el.getBoundingClientRect() as HTMLElement;
+  const buttonRect = ellipsisButtonRef.value.$el.getBoundingClientRect();
   clearMenuRef.value.style.top = `${buttonRect.bottom}px`;
   clearMenuRef.value.style.left = `${buttonRect.left}px`;
 };
