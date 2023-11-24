@@ -6,24 +6,27 @@
 
 <script lang="ts" setup>
 import axios from "axios";
+import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import {useSearchStore} from "@/stores/main.ts";
+import {onMounted} from "vue";
 
 const searchStore = useSearchStore();
 
-const props = defineProps({
+defineProps({
   customClass: {
     type: String
   }
 })
 
-const emit = defineEmits(['signIn'])
+onMounted(() => {
+  GoogleAuth.initialize();
+});
 
 const callbackLogin = async (response: any) => {
   searchStore.isLoading = true;
   try {
-    const accessToken = response.access_token;
-    await searchStore.saveToken(response.access_token);
-    console.log(accessToken);
+    const accessToken = response.authentication.accessToken;
+    await searchStore.saveToken(accessToken);
     await axios.get('https://www.googleapis.com/oauth2/v1/userinfo?alt=json', {
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -37,13 +40,15 @@ const callbackLogin = async (response: any) => {
 
 }
 
-const signIn = () => {
-  window.google!.accounts.oauth2.initTokenClient({
-    client_id: "105905256008-kv62n8kbf3jtm8nv90dmvsgl3ovfot7q.apps.googleusercontent.com",
-    scope: 'https://www.googleapis.com/auth/userinfo.profile',
-    discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'],
-    callback: callbackLogin,
-  }).requestAccessToken();
+const signIn = async () => {
+  // window.google!.accounts.oauth2.initTokenClient({
+  //   client_id: "105905256008-kv62n8kbf3jtm8nv90dmvsgl3ovfot7q.apps.googleusercontent.com",
+  //   scope: 'https://www.googleapis.com/auth/userinfo.profile',
+  //   discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'],
+  //   callback: callbackLogin,
+  // }).requestAccessToken();
+  const response = await GoogleAuth.signIn();
+  await callbackLogin(response);
 }
 </script>
 
