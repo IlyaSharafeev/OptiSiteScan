@@ -18,6 +18,8 @@
           </ion-list>
           <ion-button type="submit" expand="block" class="auth-button">Sign In</ion-button>
           <p class="toggle-form" @click="toggleForm">Don't have an account? Sign Up</p>
+          <p class="toggle-form">or</p>
+          <SigninButton custom-class="sign-in-button"/>
         </form>
 
         <form v-else @submit.prevent="handleSignUp" class="auth-form">
@@ -58,6 +60,7 @@ import {
 import {useSearchStore} from "@/stores/main.ts";
 import { eye, eyeOff } from 'ionicons/icons';
 import axios from "axios";
+import SigninButton from "@/components/SigninButton.vue";
 
 const email = ref('');
 const password = ref('');

@@ -171,8 +171,8 @@ const showToast = ref(false);
 const toastMessage = ref("");
 
 const showClearMenu = ref(false);
-const clearMenuRef = ref(null);
-const ellipsisButtonRef = ref(null); // Ссылка на кнопку троеточия
+const clearMenuRef = ref<HTMLElement | null>(null);
+const ellipsisButtonRef = ref<HTMLElement | null>(null); // Ссылка на кнопку троеточия
 const showConfirmClear = ref(false);
 
 const clearHistoryConfirmed = () => {
@@ -184,7 +184,7 @@ const clearHistoryConfirmed = () => {
 const updateMenuPosition = () => {
   if (!ellipsisButtonRef.value || !clearMenuRef.value) return;
 
-  const buttonRect = ellipsisButtonRef.value.$el.getBoundingClientRect();
+  const buttonRect = ellipsisButtonRef.value.$el.getBoundingClientRect() as HTMLElement;
   clearMenuRef.value.style.top = `${buttonRect.bottom}px`;
   clearMenuRef.value.style.left = `${buttonRect.left}px`;
 };

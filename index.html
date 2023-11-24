@@ -27,10 +27,15 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Ionic App" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+
+      <meta name="google-signin-client_id" content="105905256008-kv62n8kbf3jtm8nv90dmvsgl3ovfot7q.apps.googleusercontent.com">
   </head>
 
   <body class="dark">
     <div id="app"></div>
+    <!-- В index.html -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
     <script type="module" src="/src/main.ts"></script>
   </body>
 
