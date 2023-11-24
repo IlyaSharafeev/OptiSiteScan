@@ -38,7 +38,7 @@ const callbackLogin = async (response: any) => {
 }
 
 const signIn = () => {
-  window.google.accounts.oauth2.initTokenClient({
+  window.google!.accounts.oauth2.initTokenClient({
     client_id: "105905256008-kv62n8kbf3jtm8nv90dmvsgl3ovfot7q.apps.googleusercontent.com",
     scope: 'https://www.googleapis.com/auth/userinfo.profile',
     discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/calendar/v3/rest'],
