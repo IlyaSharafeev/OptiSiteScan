@@ -1,5 +1,21 @@
-declare global {
-    interface Window {
-        google: any; // Или более конкретный тип, если он у вас есть
-    }
+// global.d.ts
+interface GoogleOAuth2 {
+    initTokenClient(args: {
+        client_id: string;
+        scope: string;
+        discoveryDocs: string[];
+        callback: (response: any) => void;
+    }): {
+        requestAccessToken: () => void;
+    };
+}
+
+interface GoogleAccounts {
+    oauth2: GoogleOAuth2;
+}
+
+interface Window {
+    google?: {
+        accounts: GoogleAccounts;
+    };
 }
