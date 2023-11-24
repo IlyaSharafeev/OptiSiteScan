@@ -1,5 +1,8 @@
 <template>
   <ion-page>
+    <div v-if="showClearMenu" class="clear-menu" ref="clearMenuRef">
+      <ion-item @click="showConfirmClear = true">Clear history</ion-item>
+    </div>
 
     <ion-header>
       <ion-toolbar class="toolbar">
@@ -25,6 +28,10 @@
               <ion-icon :icon="sortIcon"></ion-icon>
             </ion-button>
 
+            <ion-button ref="ellipsisButtonRef" @click="toggleClearMenu">
+              <ion-icon :icon="ellipsisVertical"></ion-icon>
+            </ion-button>
+
           </ion-buttons>
           <ion-title class="ion-text-center menu-title">Search History</ion-title>
         </ion-toolbar>
@@ -36,6 +43,9 @@
               <h2>{{ link }}</h2>
             </ion-label>
             <ion-buttons slot="end">
+              <ion-button @click="copyToClipboard(link)">
+                <ion-icon :icon="copyIcon"></ion-icon>
+              </ion-button>
               <ion-button @click="removeFromHistory(index)">
                 <ion-icon :icon="trash"></ion-icon>
               </ion-button>
@@ -93,6 +103,30 @@
         @didDismiss="setOpen(false)"
     ></ion-alert>
 
+    <ion-toast
+        :is-open="showToast"
+        :message="toastMessage"
+        :duration="2000"
+        @didDismiss="() => showToast = false">
+    </ion-toast>
+
+    <ion-alert
+        :is-open="showConfirmClear"
+        header="Подтверждение"
+        message="Ты уверен, что хочешь очистить историю поиска?"
+        :buttons="[
+    {
+      text: 'Нет',
+      role: 'cancel',
+      handler: () => { showConfirmClear = false; }
+    },
+    {
+      text: 'Да',
+      handler: () => { clearHistoryConfirmed(); }
+    }
+  ]"
+    ></ion-alert>
+
   </ion-page>
 </template>
 
@@ -119,18 +153,50 @@ import {
     IonMenuButton,
     IonLabel,
 } from '@ionic/vue';
-import {logoBuffer, searchOutline, closeOutline, camera, close, trash, arrowUp, arrowDown} from "ionicons/icons";
+import {logoBuffer, searchOutline, closeOutline, camera, close, trash, arrowUp, arrowDown, ellipsisVertical} from "ionicons/icons";
 import { Clipboard } from '@capacitor/clipboard';
 import {useSearchStore} from "@/stores/main";
 import {useRouter} from 'vue-router';
 import axios from 'axios';
 import { Camera, CameraResultType } from '@capacitor/camera';
 import { Preferences } from '@capacitor/preferences';
-import {ref, onMounted, computed} from 'vue';
+import { copy as copyIcon } from 'ionicons/icons';
+import {ref, onMounted, computed, nextTick, onUnmounted} from 'vue';
 import { menuController } from '@ionic/vue';
+import { IonToast } from '@ionic/vue';
+import {onClickOutside} from "@vueuse/core";
 
-const showSidebar = ref(false);
 const searchHistory = ref<string[]>([]);
+const showToast = ref(false);
+const toastMessage = ref("");
+
+const showClearMenu = ref(false);
+const clearMenuRef = ref(null);
+const ellipsisButtonRef = ref(null); // Ссылка на кнопку троеточия
+const showConfirmClear = ref(false);
+
+const clearHistoryConfirmed = () => {
+  searchHistory.value = [];
+  showClearMenu.value = false;
+  showConfirmClear.value = false;
+};
+
+const updateMenuPosition = () => {
+  if (!ellipsisButtonRef.value || !clearMenuRef.value) return;
+
+  const buttonRect = ellipsisButtonRef.value.$el.getBoundingClientRect();
+  clearMenuRef.value.style.top = `${buttonRect.bottom}px`;
+  clearMenuRef.value.style.left = `${buttonRect.left}px`;
+};
+
+const toggleClearMenu = () => {
+  showClearMenu.value = !showClearMenu.value;
+  if (showClearMenu.value) {
+    nextTick(() => {
+      updateMenuPosition();
+    });
+  }
+};
 
 onMounted(async () => {
   searchHistory.value = await getSearchHistory();
@@ -147,8 +213,10 @@ const textALert = ref('');
 const alertButtons = ['OK'];
 const menuRef = ref(null);
 const isDescending = ref(true);
-const sortOrderText = computed(() => isDescending.value ? 'Сначала старые' : 'Сначала новые');
 const sortIcon = computed(() => isDescending.value ? arrowDown : arrowUp);
+
+
+onClickOutside(clearMenuRef, () => showClearMenu.value = false)
 
 const toggleSortOrder = () => {
   isDescending.value = !isDescending.value;
@@ -268,9 +336,29 @@ const openCamera = async () => {
     isLoading.value = false; // Выключаем спиннер
   }
 };
+
+const copyToClipboard = async (text: string) => {
+  await Clipboard.write({
+    string: text
+  });
+
+  toastMessage.value = "Link is copied";
+  showToast.value = true;
+};
 </script>
 
 <style scoped>
+.clear-menu {
+  position: absolute;
+  border-radius: 5px;
+  z-index: 99999;
+}
+
+.clear-menu ion-item {
+  cursor: pointer;
+  z-index: 9999;
+}
+
 ion-content {
   position: relative; /* Устанавливаем относительное позиционирование для ion-content */
   height: 100vh; /* Устанавливаем высоту на всю видимую область */

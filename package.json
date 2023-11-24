@@ -25,6 +25,7 @@
     "@capacitor/status-bar": "5.0.6",
     "@ionic/vue": "^7.0.0",
     "@ionic/vue-router": "^7.0.0",
+    "@vueuse/core": "^10.6.1",
     "apexcharts": "^3.44.0",
     "axios": "^1.6.2",
     "chart.js": "^4.4.0",
