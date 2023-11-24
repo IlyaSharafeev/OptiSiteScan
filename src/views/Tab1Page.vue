@@ -182,8 +182,11 @@ const clearHistoryConfirmed = () => {
 };
 
 const updateMenuPosition = () => {
+  // @ts-ignore
   const buttonRect = ellipsisButtonRef.value.$el.getBoundingClientRect();
+  // @ts-ignore
   clearMenuRef.value.style.top = `${buttonRect.bottom}px`;
+  // @ts-ignore
   clearMenuRef.value.style.left = `${buttonRect.left}px`;
 };
 
