@@ -1,159 +1,169 @@
 <template>
   <ion-page>
     <ion-header>
-      <ion-segment color="secondary" mode="md" v-model="activeTab">
-        <ion-segment-button value="list">
-          <ion-label>accessibility</ion-label>
-        </ion-segment-button>
-        <ion-segment-button value="performance">
-          <ion-label>performance</ion-label>
-        </ion-segment-button>
-      </ion-segment>
+      <ion-toolbar>
+        <ion-segment color="secondary" mode="md" v-model="activeTab">
+          <ion-segment-button value="accessibility">
+            <ion-label>Accessibility</ion-label>
+          </ion-segment-button>
+          <ion-segment-button value="performance">
+            <ion-label>Performance</ion-label>
+          </ion-segment-button>
+        </ion-segment>
+        <ion-buttons slot="end">
+          <ion-button @click="openFilterModal">
+            <ion-icon :icon="filterIcon" :color="getFilterIconColor()"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
     </ion-header>
     <ion-content v-if="searchStore.searchData && !searchStore.isLoading" :scroll-events="true" @ionScroll="checkScroll" ref="content">
       <div v-if="activeTab === 'performance'">
-        <ion-card v-for="(value, key) in performanceData" :key="key">
+        <ion-card v-for="auditRef in performanceAudits" :key="auditRef.id">
           <ion-card-header>
-            <ion-card-title>{{ formatTitle(key) }}</ion-card-title>
+            <ion-card-title>{{ formatTitle(auditRef.id) }}</ion-card-title>
           </ion-card-header>
-          <ion-card-content>
-            <ion-chip :color="getCategoryColor(value.category)">
-              <ion-icon :icon="getCategoryIcon(value.category)"></ion-icon>
-              <ion-label>{{ value.category }}</ion-label>
-            </ion-chip>
-            <div class="percentile">Percentile: {{ value.percentile }}</div>
-            <ion-list>
-              <ion-item v-for="(distribution, index) in value.distributions" :key="index">
-                <ion-label>
-                  <p>Min: {{ distribution.min }} Max: {{ distribution.max || 'N/A' }}</p>
-                  <p>Proportion: {{ formatNumber(distribution.proportion) }}</p>
-                </ion-label>
-              </ion-item>
-            </ion-list>
+          <ion-card-content v-if="auditDetails[auditRef.id]">
+            <ion-progress-bar
+                :value="auditDetails[auditRef.id].score"
+                :color="getProgressBarColor(auditDetails[auditRef.id].score)">
+            </ion-progress-bar>
+            <p v-html="linkify(auditDetails[auditRef.id].description)"></p>
           </ion-card-content>
         </ion-card>
       </div>
-      <div v-if="activeTab === 'list'">
-        <div v-for="(item, index) in auditItems" :key="index">
-        <ion-item @click="toggleDetails(item.id)" v-if="item.score !== null && item.score !== 1 && item.score !== 0">
-          <ion-label class="" style="display: flex; justify-content: space-between">
-            <h2>{{ item.title }}</h2>
-            <p v-if="item.score !== null && item.score !== 1 && item.score !== 0" class="score" style="min-width: 55px">{{ item.score }} ms</p>
-          </ion-label>
-        </ion-item>
-        <ion-card v-if="openedItemId === item.id">
-          <ion-card-content>
-            <p v-html="linkify(item.description)"></p>
+      <div v-if="activeTab === 'accessibility'">
+        <ion-card v-for="auditRef in accessibilityAudits" :key="auditRef.id">
+          <ion-card-header>
+            <ion-card-title>{{ formatTitle(auditRef.id) }}</ion-card-title>
+          </ion-card-header>
+          <ion-card-content v-if="auditDetails[auditRef.id]">
+            <ion-progress-bar
+                :value="auditDetails[auditRef.id].score"
+                :color="getProgressBarColor(auditDetails[auditRef.id].score)">
+            </ion-progress-bar>
+            <p v-html="linkify(auditDetails[auditRef.id].description)"></p>
           </ion-card-content>
         </ion-card>
       </div>
-      </div>
-
-      <ion-fab vertical="bottom" horizontal="end" slot="fixed" v-show="showScrollTop">
-        <ion-fab-button @click="scrollTop">
-          <ion-icon :icon="arrowUpOutline"></ion-icon>
-        </ion-fab-button>
-      </ion-fab>
     </ion-content>
-    <ion-content v-else class="ion-padding">
-      <div v-if="!searchStore.isLoading" class="centered-content">
-        <h1 class="ion-color-tertiary">to get the stats, you'll need to do a scan</h1>
-        <button class="button-30" role="button" @click="router.push({name: 'tab1'});">Scan</button>
-      </div>
-    </ion-content>
+    <ion-modal :is-open="showFilterModal">
+      <ion-header translucent>
+        <ion-toolbar>
+          <ion-title>Filters</ion-title>
+          <ion-buttons slot="end">
+            <ion-button @click="closeFilterModal">Close</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        <ion-list>
+          <ion-item
+              v-for="option in filterOptions"
+              :key="option.value"
+              :class="{'active-filter': filter === option.value}"
+              @click="setFilter(option.value)">
+            {{ option.label }}
+          </ion-item>
+        </ion-list>
+      </ion-content>
+    </ion-modal>
   </ion-page>
 </template>
 
 <script setup>
 import {
-  IonPage,
-  IonHeader,
-  IonContent,
-  IonItem,
-  IonLabel,
-  IonCard,
-  IonCardContent,
-  IonCardHeader,
-  IonList,
-  IonIcon,
-  IonFab,
-  IonFabButton,
-  IonSegment,
-  IonSegmentButton,
-  IonCardTitle,
-  IonChip,
+  IonTitle, IonModal, IonToolbar, IonPage, IonHeader, IonContent, IonCard, IonCardHeader, IonCardContent, IonSegment, IonSegmentButton, IonCardTitle, IonLabel, IonProgressBar, IonList, IonMenu, IonItem, IonButtons, IonIcon, IonButton
 } from '@ionic/vue';
-import {computed, ref} from 'vue';
-import {useSearchStore} from "@/stores/main.ts";
-import {speedometerOutline, hourglassOutline, timeOutline , helpCircleOutline, arrowUpOutline} from 'ionicons/icons';
-import {useRouter} from "vue-router";
+import {computed, reactive, ref} from 'vue';
+import { useSearchStore } from "@/stores/main.ts";
+import { useRouter } from "vue-router";
+import { filter as filterIcon } from 'ionicons/icons';
 
 const searchStore = useSearchStore();
-const showScrollTop = ref(false);
-const content = ref(null);
 const router = useRouter();
-const activeTab = ref('charts'); // Начальная вкладка
+const activeTab = ref('performance');
+const showScrollTop = ref(false);
+const showFilterModal = ref(false);
 
-const auditItems = computed(() => searchStore.searchData[0].lighthouseResult.audits);
-const performanceData = computed(() => searchStore.searchData[0].originLoadingExperience.metrics);
-const openedItemId = ref(null);
-
-// Переключение видимости деталей
-const toggleDetails = (id) => {
-  if (openedItemId.value === id) {
-    openedItemId.value = null;
-  } else {
-    openedItemId.value = id;
+const performanceAudits = computed(() => getFilteredAudits(searchStore.searchData[0].lighthouseResult.categories.performance.auditRefs));
+const accessibilityAudits = computed(() => getFilteredAudits(searchStore.searchData[0].lighthouseResult.categories.accessibility.auditRefs));
+const auditDetails = computed(() => {
+  const details = {};
+  if (searchStore.searchData && searchStore.searchData.length > 0) {
+    const audits = searchStore.searchData[0].lighthouseResult.audits;
+    for (const audit in audits) {
+      if (audits.hasOwnProperty(audit)) {
+        details[audit] = audits[audit];
+      }
+    }
   }
+  return details;
+});
+const filter = ref('all');
+
+const openFilterModal = () => {
+  showFilterModal.value = true;
 };
 
-const checkScroll = (event) => {
-  showScrollTop.value = event.detail.scrollTop > 200;
+const closeFilterModal = () => {
+  showFilterModal.value = false;
 };
 
-const scrollTop = () => {
-  if (content.value && content.value.$el && typeof content.value.$el.scrollToTop === 'function') {
-    content.value.$el.scrollToTop(500);
-  } else {
-    console.error('Method scrollToTop is not available');
-  }
+const filterOptions = reactive([
+  { value: 'all', label: 'All', color: 'default' },
+  { value: 'danger', label: 'Critical', color: 'danger' },
+  { value: 'warning', label: 'Warning', color: 'warning' },
+  { value: 'success', label: 'Good', color: 'success' },
+]);
+
+const getFilterIconColor = () => {
+  const option = filterOptions.find(o => o.value === filter.value);
+  return option ? option.color : 'default';
 };
 
-const linkify = (text) => {
-  const urlRegex = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#/%?=~_|!:,.;]*[-A-Z0-9+&@#/%=~_|])/ig;
-  return text.replace(urlRegex, (url) => {
-    return `<a href="${url}" target="_blank">${url}</a>`;
+const setFilter = (selectedFilter) => {
+  filter.value = selectedFilter;
+  closeFilterModal();
+};
+
+const getFilteredAudits = (audits) => {
+  return audits.filter(auditRef => {
+    const auditDetail = auditDetails.value[auditRef.id];
+    if (!auditDetail) return false; // Дополнительная проверка
+
+    if (filter.value === 'all') return true;
+    const scoreColor = getProgressBarColor(auditDetail.score);
+    return scoreColor === filter.value;
   });
 };
 
-const formatTitle = (key) => {
-  return key.replace(/_/g, ' ').toUpperCase();
-};
-
-const getCategoryColor = (category) => {
-  switch (category) {
-    case 'FAST': return 'success';
-    case 'AVERAGE': return 'warning';
-    case 'SLOW': return 'danger';
-    default: return 'medium';
+const filteredAudits = (audits) => {
+  if (filter.value === 'all') {
+    return audits;
   }
+  return audits.filter(auditRef => getProgressBarColor(auditDetails[auditRef.id].score) === filter.value);
 };
 
-const getCategoryIcon = (category) => {
-  switch (category) {
-    case 'FAST': return speedometerOutline;
-    case 'AVERAGE': return hourglassOutline;
-    case 'SLOW': return timeOutline;
-    default: return helpCircleOutline;
-  }
-};
+const formatTitle = (key) => key.replace(/-/g, ' ').toUpperCase();
+const linkify = (text) => text.replace(/(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#/%?=~_|!:,.;]*[-A-Z0-9+&@#/%=~_|])/ig, (url) => `<a href="${url}" target="_blank">read more</a>`);
 
-const formatNumber = (number) => {
-  return new Intl.NumberFormat().format(number);
+const checkScroll = (event) => showScrollTop.value = event.detail.scrollTop > 200;
+const scrollTop = () => content.value && content.value.$el && typeof content.value.$el.scrollToTop === 'function' ? content.value.$el.scrollToTop(500) : console.error('Method scrollToTop is not available');
+
+const getProgressBarColor = (score) => {
+  if (score >= 0.9) return 'success';
+  if (score >= 0.5) return 'warning';
+  return 'danger';
 };
 </script>
 
 <style scoped>
+.active-filter {
+  font-weight: bold;
+  color: var(--ion-color-primary);
+}
+
 .centered-content {
   display: flex;
   justify-content: center;

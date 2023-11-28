@@ -14,7 +14,6 @@ export const useSearchStore = defineStore("search", () => {
         try {
             const response = await axios.post('https://opti-site-scan-backend.onrender.com/', { link });
             searchData.value = Object.values(response.data);
-            console.log(response.data);
             console.log(searchData.value);
             isLoading.value = false;
             return response.data;
