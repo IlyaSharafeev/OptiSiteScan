@@ -14,7 +14,7 @@
 
     <ion-menu side="start" menuId="first" contentId="main-content">
       <ion-header>
-        <ion-toolbar color="primary">
+        <ion-toolbar>
           <ion-buttons slot="start">
 
             <ion-button class="close-button" @click="closeMenu">
@@ -33,7 +33,6 @@
             </ion-button>
 
           </ion-buttons>
-          <ion-title class="ion-text-center menu-title">Search History</ion-title>
         </ion-toolbar>
       </ion-header>
       <ion-content>
@@ -58,7 +57,8 @@
     <ion-router-outlet id="main"></ion-router-outlet>
 
     <ion-content :fullscreen="true" class="ion-padding ion-text-center" id="main-content">
-        <ion-item class="input-item" lines="none">
+      <canvas :key="canvasKey" class="canvas-matrix" ref="canvasRef"></canvas>
+      <ion-item class="input-item" lines="none">
           <ion-input v-model="inputData"></ion-input>
           <ion-icon
               v-show="inputData"
@@ -166,6 +166,19 @@ import { menuController } from '@ionic/vue';
 import { IonToast } from '@ionic/vue';
 import {onClickOutside} from "@vueuse/core";
 
+const router = useRouter();
+
+const inputData = ref('');
+const searchStore = useSearchStore();
+
+const isOpen = ref(false);
+const isLoading = ref(false);
+const textALert = ref('');
+const alertButtons = ['OK'];
+const menuRef = ref(null);
+const isDescending = ref(true);
+const sortIcon = computed(() => isDescending.value ? arrowDown : arrowUp);
+
 const searchHistory = ref<string[]>([]);
 const showToast = ref(false);
 const toastMessage = ref("");
@@ -174,6 +187,60 @@ const showClearMenu = ref(false);
 const clearMenuRef = ref<HTMLElement | null>(null);
 const ellipsisButtonRef = ref<HTMLElement | null>(null); // Ссылка на кнопку троеточия
 const showConfirmClear = ref(false);
+const canvasRef = ref(null) as any; // ref для доступа к элементу canvas
+const canvasKey = ref(0);
+
+
+const initializeCanvas = () => {
+  nextTick(() => {
+    canvasApp();
+  });
+};
+
+onMounted(() => {
+  initializeCanvas();
+});
+
+
+window.addEventListener('resize', () => {
+  if (canvasRef.value) {
+    canvasRef.value.width = window.innerWidth;
+    canvasRef.value.height = window.innerHeight;
+    canvasApp();
+  }
+});
+
+const canvasApp = () => {
+  let Game_Interval: any; // Объявляем переменную здесь, чтобы она была доступна в функциях runMatrix и drawScreen
+
+  const ctx = canvasRef.value.getContext('2d');
+  const w = canvasRef.value.width = window.innerWidth;
+  const h = canvasRef.value.height = window.innerHeight;
+  const yPositions = Array(300).join(0).split('');
+  const runMatrix = () => {
+    clearInterval(Game_Interval); // Не нужно проверять на undefined, clearInterval корректно обрабатывает несуществующие идентификаторы
+    Game_Interval = setInterval(drawScreen, 43);
+  }
+
+  const drawScreen = () => {
+    ctx.fillStyle = 'rgba(0,0,0,.05)';
+    ctx.fillRect(0, 0, w, h);
+    ctx.fillStyle = '#0f0'; // Зеленый цвет текста
+    ctx.font = '10px Georgia';
+    yPositions.map(function(y, index) {
+      const text = String.fromCharCode(1e2 + Math.random() * 33);
+      const x = (index * 10) + 10;
+      ctx.fillText(text, x, y);
+      if (y > 100 + Math.random() * 1e4) {
+        yPositions[index] = 0;
+      } else {
+        yPositions[index] = y + 10;
+      }
+    });
+  }
+
+  runMatrix();
+}
 
 const clearHistoryConfirmed = () => {
   searchHistory.value = [];
@@ -203,18 +270,7 @@ onMounted(async () => {
   searchHistory.value = await getSearchHistory();
 });
 
-const router = useRouter();
 
-const inputData = ref('');
-const searchStore = useSearchStore();
-
-const isOpen = ref(false);
-const isLoading = ref(false);
-const textALert = ref('');
-const alertButtons = ['OK'];
-const menuRef = ref(null);
-const isDescending = ref(true);
-const sortIcon = computed(() => isDescending.value ? arrowDown : arrowUp);
 
 
 onClickOutside(clearMenuRef, () => showClearMenu.value = false)
@@ -225,8 +281,9 @@ const toggleSortOrder = () => {
 };
 
 const closeMenu = async () => {
-  await menuController.close();
+  await menuController.close('first');
 };
+
 const saveSearchHistory = async (newLink: string) => {
   const { value } = await Preferences.get({ key: 'searchHistory' });
   let history = value ? JSON.parse(value) : [];
@@ -349,6 +406,102 @@ const copyToClipboard = async (text: string) => {
 </script>
 
 <style scoped>
+.canvas-matrix {
+  position: absolute;
+  filter: blur(0px);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.input-item {
+  z-index: 2;
+}
+/* Стиль для кнопок в теле страницы */
+ion-button {
+  --background: #333; /* Тёмный фон для кнопки */
+  --background-activated: #444; /* Фон для кнопки при нажатии */
+  --background-focused: #444; /* Фон для кнопки при фокусе */
+  --background-hover: #444; /* Фон для кнопки при наведении */
+  --color: #4caf50; /* Цвет текста/иконок кнопки */
+  --border-radius: 4px; /* Скругление углов кнопки */
+}
+
+/* Стиль для кнопок в тулбаре */
+ion-toolbar ion-button {
+  --background: transparent; /* Прозрачный фон */
+  --color: #4caf50; /* Цвет иконок и текста */
+}
+
+/* Стиль для активированных кнопок в тулбаре */
+ion-toolbar ion-button:active {
+  --background: #333; /* Тёмный фон для активной кнопки */
+  --color: #4caf50; /* Цвет текста/иконок активной кнопки */
+}
+
+/* Стиль для кнопок в футере */
+ion-footer ion-button {
+  --background: #333; /* Тёмный фон для кнопки */
+  --color: #4caf50; /* Цвет текста/иконок кнопки */
+}
+
+/* Стиль для ion-menu-button */
+ion-menu-button {
+  --color: #4caf50; /* Цвет кнопки меню */
+}
+
+/* Стиль для ion-icon внутри кнопок */
+ion-button ion-icon {
+  --color: #4caf50; /* Цвет иконок в кнопках */
+}
+
+/* Общий тёмный фон для страницы */
+ion-page {
+  --background: #121212; /* Тёмный фон */
+  --ion-text-color: #fff; /* Белый текст */
+}
+
+/* Стиль для тулбара */
+ion-toolbar {
+  --background: #1a1a1a; /* Тёмный фон для тулбара */
+  --color: #fff; /* Белый текст */
+}
+
+/* Стиль для кнопок меню */
+ion-menu-button {
+  --color: #4caf50; /* Цвет кнопки меню */
+}
+
+/* Изменения для меню */
+ion-menu {
+  --background: #1a1a1a; /* Тёмный фон для меню */
+}
+
+/* Стиль для заголовка в меню */
+ion-title.menu-title {
+  color: #4caf50; /* Цвет заголовка */
+}
+
+/* Стиль для элементов списка в истории поиска */
+.search-history-item {
+  --background: #262626; /* Тёмный фон для элемента */
+  --border: 1px solid #333; /* Граница элемента */
+  --color: #b3b3b3; /* Светлый текст */
+}
+
+/* Стиль для иконок в элементах списка */
+ion-icon {
+  color: #4caf50; /* Цвет иконок */
+}
+
+
+/* Стиль для футера */
+ion-footer {
+  --background: #1a1a1a; /* Тёмный фон для футера */
+}
+
 .clear-menu {
   position: absolute;
   border-radius: 5px;
@@ -367,12 +520,12 @@ ion-content {
 
 .input-item {
   position: absolute; /* Абсолютное позиционирование для ion-item */
-  top: 50%; /* Позиционируем на половине высоты родителя */
+  top: 45%; /* Позиционируем на половине высоты родителя */
   left: 50%; /* Позиционируем на половине ширины родителя */
   transform: translate(-50%, -50%); /* Смещаем назад, чтобы центр элемента был в центре родителя */
   width: 100%; /* Можно задать конкретную ширину, если нужно */
   padding: 0 10px;
-  --border-radius: 10px;
+  --border-radius: 20px;
 }
 
 ion-title {
@@ -397,18 +550,6 @@ ion-title {
   padding: 20px 0;
 }
 
-.search-history-item {
-  position: relative;
-  --background: #2c3e50; /* Темный фон для элемента */
-  --color: #fff; /* Светлый текст */
-  --padding-start: 15px;
-  --min-height: 50px;
-  --border-radius: 8px;
-  margin-bottom: 10px;
-  width: 100%; /* Устанавливаем ширину на auto или 100% */
-  padding: 0 10px;
-}
-
 .search-history ion-label h2 {
   font-size: 1rem;
 }
@@ -421,27 +562,62 @@ ion-list {
   --padding-end: 0px; /* Уменьшаем отступ справа от кнопки */
 }
 
-.sort-button {
-  --color: #fff; /* Цвет иконки */
-  --border: none; /* Убрать границу */
-  background-color: #e3e6df;
-  border-radius: 10px;
-}
-
-.close-button {
-  background-color: #e3e6df;
-  border-radius: 10px;
-}
-
 .sort-button ion-icon {
   font-size: 1rem; /* Размер иконки */
 }
 
-.menu-title {
-  font-size: 18px;
-  margin: 0 15px;
-  background-color: #e3e6df;
-  border-radius: 10px;
-  padding: 5px;
+/* Тёмный стиль для ion-menu и его компонентов */
+ion-menu {
+  --background: #1e1e1e; /* Тёмный фон для меню */
+}
+
+ion-header {
+  --background: #121212; /* Тёмный фон для шапки меню */
+}
+
+/* Стилизация кнопок в тулбаре меню */
+.toolbar ion-button {
+  --background: #2a2a2a; /* Тёмный фон для кнопок */
+  --color: #4caf50; /* Цвет иконок и текста */
+}
+
+/* Стилизация элементов списка истории поиска */
+.search-history-item {
+  position: relative;
+  --padding-start: 15px;
+  --min-height: 50px;
+  --border-radius: 8px;
+  margin-bottom: 10px;
+  width: 100%; /* Устанавливаем ширину на auto или 100% */
+  padding: 0 10px;
+  --background: #2a2a2a; /* Тёмный фон для элементов списка */
+  --color: #fff; /* Светлый текст */
+  --border-color: #4caf50; /* Цвет границы элементов списка */
+}
+
+/* Стилизация иконок в элементах списка */
+.search-history-item ion-icon {
+  --color: #4caf50; /* Цвет иконок */
+}
+
+/* Стилизация кнопки для очистки истории */
+.clear-menu ion-item {
+  --background: #2a2a2a; /* Тёмный фон для кнопки */
+  --color: #fff; /* Светлый текст */
+  --ion-item-background: #2a2a2a; /* Фон для элемента ion-item */
+  border: 1px solid #4caf50; /* Граница для кнопки */
+  margin: 0.5rem; /* Отступы вокруг кнопки */
+  padding: 0.5rem; /* Внутренние отступы кнопки */
+}
+
+/* Стилизация подтверждающего ion-alert */
+ion-alert {
+  --background: #2a2a2a; /* Тёмный фон для алерта */
+  --color: #fff; /* Светлый текст */
+}
+
+/* Стилизация спиннера загрузки */
+.spinner-overlay {
+  --color: #4caf50; /* Цвет спиннера */
 }
 </style>

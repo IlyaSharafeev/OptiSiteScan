@@ -2,19 +2,14 @@
   <ion-page>
     <ion-header>
       <ion-toolbar>
-        <ion-segment color="secondary" mode="md" v-model="activeTab">
-          <ion-segment-button value="accessibility">
+        <ion-segment mode="md" v-model="activeTab">
+          <ion-segment-button class="segment-btn" value="accessibility">
             <ion-label>Accessibility</ion-label>
           </ion-segment-button>
-          <ion-segment-button value="performance">
+          <ion-segment-button class="segment-btn" value="performance">
             <ion-label>Performance</ion-label>
           </ion-segment-button>
         </ion-segment>
-        <ion-buttons slot="end">
-          <ion-button @click="openFilterModal">
-            <ion-icon :icon="filterIcon" :color="getFilterIconColor()"></ion-icon>
-          </ion-button>
-        </ion-buttons>
       </ion-toolbar>
     </ion-header>
     <ion-content v-if="searchStore.searchData && !searchStore.isLoading" :scroll-events="true" @ionScroll="checkScroll" ref="content">
@@ -47,20 +42,28 @@
         </ion-card>
       </div>
     </ion-content>
-    <ion-modal :is-open="showFilterModal">
+    <ion-button v-show="!showFilterModal" class="floating-filter-button" @click="openFilterModal">
+      <ion-icon :icon="filterIcon" :color="getFilterIconColor()"></ion-icon>
+    </ion-button>
+    <ion-modal :is-open="showFilterModal" css-class="custom-modal">
       <ion-header translucent>
         <ion-toolbar>
-          <ion-title>Filters</ion-title>
+          <ion-title>
+            <ion-icon class="modal-title-icon" :icon="filterIcon" :color="getFilterIconColor()"></ion-icon>
+          </ion-title>
           <ion-buttons slot="end">
-            <ion-button @click="closeFilterModal">Close</ion-button>
+            <ion-button @click="closeFilterModal">
+              <ion-icon :icon="close"></ion-icon>
+            </ion-button>
           </ion-buttons>
         </ion-toolbar>
       </ion-header>
-      <ion-content class="ion-padding">
+      <ion-content>
         <ion-list>
           <ion-item
               v-for="option in filterOptions"
               :key="option.value"
+              class="modal-item ion-no-padding ion-no-margin"
               :class="{'active-filter': filter === option.value}"
               @click="setFilter(option.value)">
             {{ option.label }}
@@ -79,6 +82,7 @@ import {computed, reactive, ref} from 'vue';
 import { useSearchStore } from "@/stores/main.ts";
 import { useRouter } from "vue-router";
 import { filter as filterIcon } from 'ionicons/icons';
+import { close, filterOutline } from 'ionicons/icons';
 
 const searchStore = useSearchStore();
 const router = useRouter();
@@ -159,118 +163,15 @@ const getProgressBarColor = (score) => {
 </script>
 
 <style scoped>
-.active-filter {
-  font-weight: bold;
-  color: var(--ion-color-primary);
-}
-
-.centered-content {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  gap: 10px;
-  height: 100%; /* Высота контейнера */
-  text-align: center; /* Центрирование текста на всякий случай */
-  color: #5A5A5A; /* Обновленный цвет текста */
-}
-
-.button-30 {
-  align-items: center;
-  appearance: none;
-  background-color: #F0F0F0; /* Обновленный фон */
-  border-radius: 4px;
-  border-width: 0;
-  box-shadow: rgba(45, 35, 66, 0.4) 0 2px 4px, rgba(45, 35, 66, 0.3) 0 7px 13px -3px, #D6D6E7 0 -3px 0 inset;
-  box-sizing: border-box;
-  color: #5A5A5A; /* Обновленный цвет текста */
-  cursor: pointer;
-  display: inline-flex;
-  font-family: 'Kdam Thmor Pro', sans-serif;
-  height: 48px;
-  justify-content: center;
-  line-height: 1;
-  list-style: none;
-  overflow: hidden;
-  padding-left: 16px;
-  padding-right: 16px;
-  position: relative;
-  text-align: left;
-  text-decoration: none;
-  transition: background-color .3s, color .3s, transform .2s; /* Добавление анимации */
-  user-select: none;
-  -webkit-user-select: none;
-  touch-action: manipulation;
-  white-space: nowrap;
-  will-change: box-shadow, transform;
-  font-size: 18px;
-  text-transform: uppercase;
-  letter-spacing: 4px;
-}
-
-.button-30:focus {
-  box-shadow: #D6D6E7 0 0 0 1.5px inset, rgba(45, 35, 66, 0.4) 0 2px 4px, rgba(45, 35, 66, 0.3) 0 7px 13px -3px, #D6D6E7 0 -3px 0 inset;
-}
-
-.button-30:hover {
-  box-shadow: rgba(45, 35, 66, 0.4) 0 4px 8px, rgba(45, 35, 66, 0.3) 0 7px 13px -3px, #D6D6E7 0 -3px 0 inset;
-  transform: scale(1.05); /* Эффект увеличения при наведении */
-}
-
-.button-30:active {
-  box-shadow: #D6D6E7 0 3px 7px inset;
-  transform: translateY(2px);
-}
-
-.performance-card {
-  margin: 10px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
-.performance-card-header {
-  background-color: #f4f4f4;
-  color: #333;
-  font-weight: bold;
-  padding: 15px;
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
-}
-
-.performance-card-content {
-  padding: 15px;
-}
-
-.performance-metric {
-  font-size: 0.9em;
-  color: #666;
-  margin-bottom: 5px;
-}
-
-.performance-distribution {
-  padding: 10px;
-  background-color: #f9f9f9;
-  border-radius: 8px;
-  margin-bottom: 10px;
-}
-
-.performance-chip {
-  font-size: 0.8em;
-  margin-right: 5px;
+.segment-btn {
+  letter-spacing: 3px;
+  font-weight: 600;
 }
 
 .performance-chip ion-icon {
   font-size: 1.2em;
   vertical-align: middle;
   margin-right: 2px;
-}
-
-.score {
-  background-color: #e0e0e0;
-  border-radius: 4px;
-  padding: 2px 6px;
-  font-weight: bold;
-  color: #624848; /* Обновленный цвет текста */
 }
 
 ion-card {
@@ -291,15 +192,120 @@ ion-chip ion-icon {
   margin-right: 5px;
 }
 
-ion-item {
-  transition: transform .2s;
+ion-page {
+  --background: #121212; /* Тёмный фон */
+  --ion-text-color: #4caf50; /* Зеленый текст, напоминающий терминал */
 }
 
-ion-item:hover {
-  transform: scale(1.05);
+ion-toolbar {
+  --background: #1a1a1a; /* Тёмный фон для тулбара */
+  --color: #4caf50; /* Зеленый текст */
 }
 
-.percentile {
-  padding-top: 15px;
+ion-segment-button::part(indicator-background) {
+  background: #4caf50;
+  letter-spacing: 2px;
+}
+
+/* Material Design styles */
+ion-segment-button.md::part(native) {
+  color: white;
+}
+
+.segment-button-checked.md::part(native) {
+  color: #4caf50;
+}
+
+ion-segment-button.md::part(indicator-background) {
+  height: 4px;
+}
+
+/* iOS styles */
+ion-segment-button.ios::part(native) {
+  color: #4caf50;
+}
+
+.segment-button-checked.ios::part(native) {
+  color: #fff;
+}
+
+ion-segment-button.ios::part(indicator-background) {
+  border-radius: 20px;
+}
+
+ion-card {
+  --background: #262626; /* Тёмный фон для карточек */
+  --color: #fff; /* Белый текст */
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+
+ion-card-header {
+  --background: #333; /* Тёмный фон для заголовка карточки */
+  --color: #4caf50; /* Зеленый текст */
+}
+
+ion-card-content {
+  --background: #262626; /* Тёмный фон для содержимого карточки */
+  --color: #fff; /* Белый текст */
+}
+
+ion-modal {
+  --background: #282828; /* Тёмный фон для модального окна */
+}
+
+ion-button {
+  --background: #418841; /* Зеленый фон для кнопок */
+  --color: #fff; /* Белый текст */
+  --border-radius: 100%;
+}
+
+.active-filter {
+  color: #4caf50; /* Зеленый цвет для активных фильтров */
+  font-weight: bold;
+}
+
+.floating-filter-button {
+  position: fixed; /* Фиксированное позиционирование относительно вьюпорта */
+  right: 20px; /* Отступ справа */
+  bottom: 20px; /* Отступ снизу */
+  color: #fff; /* Белый цвет текста */
+  width: 56px; /* Ширина */
+  height: 56px; /* Высота */
+  display: flex; /* Flexbox для центрирования иконки */
+  justify-content: center; /* Горизонтальное центрирование */
+  align-items: center; /* Вертикальное центрирование */
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3); /* Тень для эффекта подъема */
+  z-index: 1000; /* Z-index выше, чем у других элементов страницы */
+  border-radius: 100%;
+}
+
+.floating-filter-button ion-icon {
+  font-size: 28px; /* Размер иконки */
+}
+
+.custom-modal {
+  --min-width: 50%; /* Минимальная ширина модального окна */
+  --min-height: 105px; /* Минимальная высота модального окна */
+  --max-width: 50%; /* Максимальная ширина модального окна */
+  --max-height: 265px; /* Максимальная высота модального окна */
+}
+
+/* Стили для фона модального окна, если нужно его изменить */
+.custom-modal::part(backdrop) {
+  background: rgba(0, 0, 0, 0.5); /* полупрозрачный черный фон */
+}
+
+.modal-item {
+  padding: 0 15px;
+  font-family: 'Lato', sans-serif;
+  letter-spacing: 2px;
+  text-align: center;
+  --border-color: #1e1e1e;
+  width: 100%;
+}
+
+.modal-title-icon {
+  padding-top:3px;
 }
 </style>

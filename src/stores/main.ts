@@ -16,6 +16,10 @@ export const useSearchStore = defineStore("search", () => {
             searchData.value = Object.values(response.data);
             console.log(searchData.value);
             isLoading.value = false;
+            await Preferences.set({
+                key: 'searchData',
+                value: searchData.value,
+            });
             return response.data;
         } catch (error) {
             console.error('Error scanning URL:', error);
@@ -39,8 +43,9 @@ export const useSearchStore = defineStore("search", () => {
         return value;
     };
 
-    const removeToken = async () => {
+    const logout = async () => {
         await Preferences.remove({ key: 'token' });
+        await router.push({name: "login"})
     };
 
     return {
@@ -49,7 +54,7 @@ export const useSearchStore = defineStore("search", () => {
         isLoading,
         saveToken,
         getToken,
-        removeToken,
+        logout,
         scanURL,
     };
 });

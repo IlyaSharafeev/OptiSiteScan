@@ -1,10 +1,12 @@
 import { createRouter, createWebHistory } from '@ionic/vue-router';
+import NotFound  from '@/components/404.vue';
 import { RouteRecordRaw } from 'vue-router';
 import TabsPage from '../views/TabsPage.vue'
 import {useSearchStore} from "@/stores/main";
 
 
 const routes: Array<RouteRecordRaw> = [
+  { path: '/:catchAll(.*)*', name: 'NotFound', component: NotFound },
   {
     path: '/',
     redirect: '/tabs/tab1'
@@ -21,19 +23,19 @@ const routes: Array<RouteRecordRaw> = [
         path: 'tab1',
         name: 'tab1',
         component: () => import('@/views/Tab1Page.vue'),
-        meta: { requiresAuth: true } // Требует аутентификации
+        meta: { requiresAuth: true }
       },
       {
         path: 'tab2',
         name: 'tab2',
         component: () => import('@/views/Tab2Page.vue'),
-        meta: { requiresAuth: true } // Требует аутентификации
+        meta: { requiresAuth: true }
       },
       {
         path: 'tab3',
         name: 'tab3',
         component: () => import('@/views/Tab3Page.vue'),
-        meta: { requiresAuth: true } // Требует аутентификации
+        meta: { requiresAuth: true }
       },
     ]
   },
