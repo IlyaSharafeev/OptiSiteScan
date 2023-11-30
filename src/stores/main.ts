@@ -4,9 +4,14 @@ import {ref} from "vue";
 import {useRouter} from "vue-router";
 import { Preferences } from '@capacitor/preferences';
 
+//TODO: create interface
+interface ScanData {
+    results: string[];
+}
+
 export const useSearchStore = defineStore("search", () => {
     const router = useRouter();
-    const searchData = ref<unknown[] | null>(null);
+    const searchData = ref<ScanData | null | any>(null);
     const isLoading = ref(false);
 
     const scanURL = async (link: string) => {
@@ -18,7 +23,7 @@ export const useSearchStore = defineStore("search", () => {
             isLoading.value = false;
             await Preferences.set({
                 key: 'searchData',
-                value: searchData.value,
+                value: JSON.stringify(searchData.value) ,
             });
             return response.data;
         } catch (error) {

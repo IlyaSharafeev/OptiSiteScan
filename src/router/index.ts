@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from '@ionic/vue-router';
-import NotFound  from '@/components/404.vue';
+import NotFound from '../components/404.vue';
 import { RouteRecordRaw } from 'vue-router';
 import TabsPage from '../views/TabsPage.vue'
 import {useSearchStore} from "@/stores/main";

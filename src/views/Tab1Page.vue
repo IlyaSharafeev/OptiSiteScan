@@ -216,7 +216,7 @@ const canvasApp = () => {
   const ctx = canvasRef.value.getContext('2d');
   const w = canvasRef.value.width = window.innerWidth;
   const h = canvasRef.value.height = window.innerHeight;
-  const yPositions = Array(300).join(0).split('');
+  const yPositions = Array(300).fill('').map(() => 0);
   const runMatrix = () => {
     clearInterval(Game_Interval); // Не нужно проверять на undefined, clearInterval корректно обрабатывает несуществующие идентификаторы
     Game_Interval = setInterval(drawScreen, 43);
