@@ -92,36 +92,24 @@ const generatePDF = async (data) => {
   // doc.addImage(chartImage, 'PNG', 10, doc.autoTable.previous.finalY + 10, 190, 80);
 
   // Создание Blob из сгенерированного PDF
-  const pdfBlob = doc.output('blob');
-  // Создание URL для Blob
-  pdfSrc.value = URL.createObjectURL(pdfBlob);
+  const pdfOutput = doc.output(); // Получаем PDF как строку
+  const blob = new Blob([pdfOutput], { type: 'application/pdf' });
+  pdfSrc.value = blob;
 };
 
 const downloadPDF = async () => {
-  if (Capacitor.getPlatform() === 'web') {
-    // Для браузера: Используем ссылку для скачивания
-    const downloadLink = document.createElement("a");
-    downloadLink.href = pdfSrc.value;
-    downloadLink.download = "report.pdf";
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
-    document.body.removeChild(downloadLink);
-  } else {
-    // Для нативной среды: Используем Capacitor Filesystem
-    try {
-      const response = await fetch(pdfSrc.value);
-      const blob = await response.blob();
-      const data = await blob.arrayBuffer();
-      await Filesystem.writeFile({
-        path: 'report.pdf',
-        data: Buffer.from(data).toString('base64'),
-        directory: Directory.Documents,
-        recursive: true
-      });
-      console.log('Файл сохранен в папке Documents');
-    } catch (error) {
-      console.error('Ошибка при сохранении файла:', error);
-    }
+  try {
+    const fileName = 'yourfile.pdf';
+    await Filesystem.writeFile({
+      path: fileName,
+      data: pdfSrc.value,
+      directory: Capacitor.getPlatform() === 'android' ? Directory.Documents : Directory.Data,
+      recursive: true
+    });
+
+    console.log(`PDF сохранен: ${fileName}`);
+  } catch (error) {
+    console.error('Ошибка при сохранении PDF:', error);
   }
 };
 </script>
