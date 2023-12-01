@@ -13,6 +13,7 @@ import {Chart} from "chart.js";
 import {computed, onMounted, ref} from 'vue';
 import {useSearchStore} from "@/stores/main";
 import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Capacitor } from '@capacitor/core';
 
 const searchStore = useSearchStore();
 const pdfSrc = ref(null);
@@ -90,14 +91,37 @@ const generatePDF = async (data) => {
   // const chartImage = chartCanvas.toDataURL('image/png');
   // doc.addImage(chartImage, 'PNG', 10, doc.autoTable.previous.finalY + 10, 190, 80);
 
+  // Создание Blob из сгенерированного PDF
   const pdfBlob = doc.output('blob');
+  // Создание URL для Blob
   pdfSrc.value = URL.createObjectURL(pdfBlob);
 };
 
-const downloadPDF = () => {
-  const downloadLink = document.createElement("a");
-  downloadLink.href = pdfSrc.value;
-  downloadLink.download = "fileName.pdf";
-  downloadLink.click();
+const downloadPDF = async () => {
+  if (Capacitor.getPlatform() === 'web') {
+    // Для браузера: Используем ссылку для скачивания
+    const downloadLink = document.createElement("a");
+    downloadLink.href = pdfSrc.value;
+    downloadLink.download = "report.pdf";
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+  } else {
+    // Для нативной среды: Используем Capacitor Filesystem
+    try {
+      const response = await fetch(pdfSrc.value);
+      const blob = await response.blob();
+      const data = await blob.arrayBuffer();
+      await Filesystem.writeFile({
+        path: 'report.pdf',
+        data: Buffer.from(data).toString('base64'),
+        directory: Directory.Documents,
+        recursive: true
+      });
+      console.log('Файл сохранен в папке Documents');
+    } catch (error) {
+      console.error('Ошибка при сохранении файла:', error);
+    }
+  }
 };
 </script>
