@@ -1,17 +1,19 @@
 <template>
   <div>
     <!-- Кнопки для работы с PDF -->
-    <button @click="generatePDF(pdfData[0])">Сгенерировать PDF</button>
+    <button @click="generatePDF(pdfData[0])">Сгенерировать PDF</button><br/><br/><br/><br/>
     <button @click="downloadPdf" :disabled="!pdfSrc">Скачать PDF</button>
   </div>
 </template>
 
 <script setup>
-import { jsPDF } from "jspdf";
+import {jsPDF} from "jspdf";
 import autoTable from "jspdf-autotable";
-import { Chart } from "chart.js";
+import {Chart} from "chart.js";
 import {computed, onMounted, ref} from 'vue';
 import {useSearchStore} from "@/stores/main";
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { Http } from '@capacitor-community/http';
 
 const searchStore = useSearchStore();
 const pdfSrc = ref(null);
@@ -90,14 +92,25 @@ const generatePDF = async (data) => {
   // doc.addImage(chartImage, 'PNG', 10, doc.autoTable.previous.finalY + 10, 190, 80);
 
   const pdfBlob = doc.output('blob');
-  const pdfUrl = URL.createObjectURL(pdfBlob);
-  pdfSrc.value = pdfUrl;
+  pdfSrc.value = URL.createObjectURL(pdfBlob);
 };
 
-const downloadPdf = () => {
-  console.log("downloadPDF");
-  if (pdfSrc.value) {
-    window.open(pdfSrc.value, '_blank');
+const downloadPdf = async () => {
+  try {
+    // Предполагается, что pdfSrc.value уже содержит ссылку на Blob
+    const response = await fetch(pdfSrc.value);
+    const blob = await response.blob();
+
+    await Filesystem.writeFile({
+      path: 'yourfile.pdf',
+      data: blob,
+      directory: Directory.Documents,
+      recursive: true
+    });
+
+    console.log('Файл скачан и сохранен в папке Documents');
+  } catch (error) {
+    console.error('Ошибка при скачивании файла:', error);
   }
 };
 </script>
