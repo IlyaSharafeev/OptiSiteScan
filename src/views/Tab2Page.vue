@@ -78,7 +78,7 @@
 import {
   IonTitle, IonModal, IonToolbar, IonPage, IonHeader, IonContent, IonCard, IonCardHeader, IonCardContent, IonSegment, IonSegmentButton, IonCardTitle, IonLabel, IonProgressBar, IonList, IonMenu, IonItem, IonButtons, IonIcon, IonButton
 } from '@ionic/vue';
-import {computed, reactive, ref} from 'vue';
+import {computed, onMounted, reactive, ref} from 'vue';
 import { useSearchStore } from "@/stores/main.ts";
 import { useRouter } from "vue-router";
 import { filter as filterIcon } from 'ionicons/icons';
@@ -89,6 +89,8 @@ const router = useRouter();
 const activeTab = ref('performance');
 const showScrollTop = ref(false);
 const showFilterModal = ref(false);
+const filter = ref('all');
+const performanceAuditsFromMemory = ref(null);
 
 const performanceAudits = computed(() => getFilteredAudits(searchStore.searchData[0].lighthouseResult.categories.performance.auditRefs));
 const accessibilityAudits = computed(() => getFilteredAudits(searchStore.searchData[0].lighthouseResult.categories.accessibility.auditRefs));
@@ -104,7 +106,10 @@ const auditDetails = computed(() => {
   }
   return details;
 });
-const filter = ref('all');
+
+onMounted(async () => {
+  await searchStore.getSearchData();
+})
 
 const openFilterModal = () => {
   showFilterModal.value = true;

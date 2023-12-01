@@ -410,8 +410,8 @@ const copyToClipboard = async (text: string) => {
   position: absolute;
   filter: blur(0px);
   top: 0;
-  left: 0;
-  width: 100%;
+  left: -10px;
+  width: 105%;
   height: 100%;
   z-index: 1;
 }

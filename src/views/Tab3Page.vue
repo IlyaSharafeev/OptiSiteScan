@@ -36,6 +36,7 @@
         <div class="bookmark-button" @click="openMenu">
           <ion-icon class="bookmark-icon"></ion-icon>
         </div>
+      <PDFViewerComponent/>
     </ion-content>
   </ion-page>
 </template>
@@ -60,7 +61,8 @@ import {
   menuController
 } from '@ionic/vue';
 import {pencilOutline, checkmarkOutline} from 'ionicons/icons';
-import {useSearchStore} from "@/stores/main";
+import PDFViewerComponent from "@/components/PDFViewerComponent.vue";
+import { useSearchStore } from "@/stores/main";
 
 const userName = ref('Имя Пользователя');
 const userNameEditable = ref(userName.value);
@@ -137,8 +139,8 @@ ion-fab {
   border-bottom-left-radius: 152px; /* Закругление слева снизу */
   width: 17px; /* Ширина закладки */
   height: 170px; /* Высота закладки */
-  background-color: #2979ff; /* Цвет фона закладки */
-  color: white; /* Цвет текста/иконки */
+  background-color: #4caf50; /* Цвет фона закладки */
+  color: #4caf50; /* Цвет текста/иконки */
   box-shadow: -3px 0 5px rgba(0, 0, 0, 0.2); /* Тень с левой стороны */
   display: flex; /* Для центрирования иконки внутри */
   align-items: center; /* Вертикальное выравнивание */
@@ -153,12 +155,60 @@ ion-fab {
 
 /* При наведении мыши на закладку */
 .bookmark-button:hover {
-  background-color: #1e88e5; /* Цвет фона при наведении */
+  background-color: #4caf50; /* Цвет фона при наведении */
 }
 
-/* Стили для темного режима */
-.dark .bookmark-button {
-  background-color: #fff; /* Светлая закладка для темной темы */
-  color: #000; /* Текст/иконка черного цвета для контраста */
+/* Стилизация бокового меню */
+ion-menu {
+  --background: #121212; /* Темный фон */
+  --color: #4caf50; /* Зеленый текст */
+}
+
+ion-header {
+  --background: #1a1a1a; /* Темный фон для шапки */
+}
+
+ion-toolbar {
+  --background: #1a1a1a; /* Темный фон для тулбара */
+  --color: #4caf50; /* Зеленый текст */
+}
+
+ion-title {
+  color: #4caf50; /* Зеленый текст */
+}
+
+ion-input {
+  --background: #262626; /* Темный фон для поля ввода */
+  --placeholder-color: #757575; /* Цвет плейсхолдера */
+  --color: #fff; /* Белый текст */
+  border: 1px solid #333; /* Граница поля ввода */
+}
+
+ion-item {
+  --background: #333; /* Темный фон для элементов списка */
+  --color: #fff; /* Белый текст */
+}
+
+.logout-button {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  --background: #333; /* Темный фон для кнопки выхода */
+}
+
+ion-label[color="danger"] {
+  color: #ff3b30; /* Красный цвет для опасных действий */
+}
+
+/* Стили для кнопки меню и темной темы */
+ion-fab {
+  position: fixed;
+  right: 0;
+  margin-right: 1em;
+  z-index: 10;
+}
+
+.bookmark-icon {
+  font-size: 24px; /* Размер иконки */
 }
 </style>
