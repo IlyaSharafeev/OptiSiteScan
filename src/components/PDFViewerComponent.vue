@@ -95,13 +95,9 @@ const generatePDF = async (data) => {
 };
 
 const downloadPdf = () => {
+  console.log("downloadPDF");
   if (pdfSrc.value) {
-    const link = document.createElement('a');
-    link.href = pdfSrc.value;
-    link.download = 'report.pdf';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    window.open(pdfSrc.value, '_blank');
   }
 };
 </script>
