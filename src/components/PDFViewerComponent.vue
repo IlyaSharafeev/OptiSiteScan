@@ -24,6 +24,7 @@ onMounted(async () => {
 let doc = new jsPDF();
 
 const generatePDF = async (data) => {
+  console.log("click on generatePDF");
   const doc = new jsPDF();
   doc.setFontSize(18);
   doc.setTextColor(60, 142, 185);
@@ -87,6 +88,10 @@ const generatePDF = async (data) => {
   // Конвертируем канвас в изображение и добавляем в PDF
   // const chartImage = chartCanvas.toDataURL('image/png');
   // doc.addImage(chartImage, 'PNG', 10, doc.autoTable.previous.finalY + 10, 190, 80);
+
+  const pdfBlob = doc.output('blob');
+  const pdfUrl = URL.createObjectURL(pdfBlob);
+  pdfSrc.value = pdfUrl;
 };
 
 const downloadPdf = () => {
