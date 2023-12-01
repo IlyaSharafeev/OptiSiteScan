@@ -1,8 +1,8 @@
 <template>
   <div>
     <!-- Кнопки для работы с PDF -->
-    <button @click="generatePDF(pdfData[0])">Сгенерировать PDF</button><br/><br/><br/><br/>
-    <button @click="downloadPdf" :disabled="!pdfSrc">Скачать PDF</button>
+    <button @click="generatePDF(pdfData[0])">Сгенерировать PDF</button>
+    <button @click="downloadPDF" style="background-color: red" :disabled="!pdfSrc">Скачать PDF</button>
   </div>
 </template>
 
@@ -13,7 +13,6 @@ import {Chart} from "chart.js";
 import {computed, onMounted, ref} from 'vue';
 import {useSearchStore} from "@/stores/main";
 import { Filesystem, Directory } from '@capacitor/filesystem';
-import { Http } from '@capacitor-community/http';
 
 const searchStore = useSearchStore();
 const pdfSrc = ref(null);
@@ -95,22 +94,10 @@ const generatePDF = async (data) => {
   pdfSrc.value = URL.createObjectURL(pdfBlob);
 };
 
-const downloadPdf = async () => {
-  try {
-    // Предполагается, что pdfSrc.value уже содержит ссылку на Blob
-    const response = await fetch(pdfSrc.value);
-    const blob = await response.blob();
-
-    await Filesystem.writeFile({
-      path: 'yourfile.pdf',
-      data: blob,
-      directory: Directory.Documents,
-      recursive: true
-    });
-
-    console.log('Файл скачан и сохранен в папке Documents');
-  } catch (error) {
-    console.error('Ошибка при скачивании файла:', error);
-  }
+const downloadPDF = () => {
+  const downloadLink = document.createElement("a");
+  downloadLink.href = pdfSrc.value;
+  downloadLink.download = "fileName.pdf";
+  downloadLink.click();
 };
 </script>
