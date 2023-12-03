@@ -3,6 +3,7 @@
     <!-- Кнопки для работы с PDF -->
     <button @click="generatePDF(pdfData[0])">Сгенерировать PDF</button>
     <button @click="downloadPDF" style="background-color: red" :disabled="!pdfSrc">Скачать PDF</button>
+    <button @click="sendPDF" style="background-color: red" :disabled="!pdfSrc">Send PDF</button>
   </div>
 </template>
 
@@ -18,6 +19,7 @@ import { Browser } from '@capacitor/browser';
 
 const searchStore = useSearchStore();
 const pdfSrc = ref(null);
+const pdfFormData = ref(null);
 
 const pdfData = computed(() => searchStore.searchData);
 onMounted(async () => {
@@ -95,29 +97,38 @@ const generatePDF = async (data) => {
 
   // Создание Blob из сгенерированного PDF
   const pdfOutput = doc.output(); // Получаем PDF как строку
-  const blob = new Blob([pdfOutput], { type: 'application/pdf' });
-  pdfSrc.value = blob;
+  const blobString = new Blob([pdfOutput], { type: 'application/pdf' });
+  pdfSrc.value = blobString;
+
+  const blob = doc.output("blob");
+  pdfSrc.value = URL.createObjectURL(blob);
+  pdfFormData.value = new FormData();
+  pdfFormData.value.append('file', blob, 'report.pdf');
 };
 
 const downloadPDF = async () => {
   if (Capacitor.isNativePlatform()) {
-    const fileName = 'report.pdf';
-    try {
-      const savedFile = await Filesystem.writeFile({
-        path: fileName,
-        data: pdfSrc.value,
-        directory: Directory.Documents,
-        recursive: true
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64Data = reader.result.split(',')[1];
+      Filesystem.writeFile({
+        path: 'report.pdf',
+        data: base64Data,
+        directory: Directory.Documents
+      }).then(async (writeFileResult) => {
+        console.log("File written successfully: ", writeFileResult);
+
+        // Путь к файлу
+        const path = writeFileResult.uri;
+
+        // Открытие файла в браузере
+        await Browser.open({ url: path });
+      }).catch(error => {
+        console.error("Error writing file: ", error);
       });
-
-      // Путь к файлу для открытия
-      const path = savedFile.uri;
-
-      // Открываем файл в браузере
-      await Browser.open({ url: path });
-    } catch (error) {
-      console.error('Ошибка при сохранении или открытии PDF (update code):', error);
-    }
+    };
+    reader.readAsDataURL(pdfSrc.value);
   } else {
     // Для веб-браузера
     const url = window.URL.createObjectURL(new Blob([pdfSrc.value], { type: 'application/pdf' }));
@@ -126,6 +137,19 @@ const downloadPDF = async () => {
     a.download = 'report.pdf';
     a.click();
     window.URL.revokeObjectURL(url);
+  }
+};
+
+const sendPDF = async () => {
+  console.log()
+  if (pdfFormData.value) {
+    for (let [key, value] of pdfFormData.value.entries()) {
+      console.log(`${key}: `, value);
+      await searchStore.sendPDF(value); // Отправка FormData
+    }
+    console.log("Отправка PDF");
+  } else {
+    console.log("PDF не сгенерирован");
   }
 };
 </script>
