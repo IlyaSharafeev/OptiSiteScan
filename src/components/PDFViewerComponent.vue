@@ -14,12 +14,14 @@ import {computed, onMounted, ref} from 'vue';
 import {useSearchStore} from "@/stores/main";
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Capacitor } from '@capacitor/core';
+import { Browser } from '@capacitor/browser';
 
 const searchStore = useSearchStore();
 const pdfSrc = ref(null);
 
 const pdfData = computed(() => searchStore.searchData);
 onMounted(async () => {
+  console.log("updated code");
   await searchStore.getSearchData();
 })
 
@@ -70,22 +72,22 @@ const generatePDF = async (data) => {
   const ctx = chartCanvas.getContext('2d');
 
   // Создаем график
-  new Chart(ctx, {
-    type: 'bar', // Тип графика
-    data: {
-      labels: auditTableData.map(item => item[0]), // Названия аудитов
-      datasets: [{
-        label: 'Audit Score',
-        data: auditTableData.map(item => item[1]), // Значения аудитов
-        backgroundColor: 'rgba(60, 142, 185, 0.5)'
-      }]
-    },
-    options: {
-      scales: {
-        yAxes: [{ ticks: { beginAtZero: true } }]
-      }
-    }
-  });
+  // new Chart(ctx, {
+  //   type: 'bar', // Тип графика
+  //   data: {
+  //     labels: auditTableData.map(item => item[0]), // Названия аудитов
+  //     datasets: [{
+  //       label: 'Audit Score',
+  //       data: auditTableData.map(item => item[1]), // Значения аудитов
+  //       backgroundColor: 'rgba(60, 142, 185, 0.5)'
+  //     }]
+  //   },
+  //   options: {
+  //     scales: {
+  //       yAxes: [{ ticks: { beginAtZero: true } }]
+  //     }
+  //   }
+  // });
 
   // Конвертируем канвас в изображение и добавляем в PDF
   // const chartImage = chartCanvas.toDataURL('image/png');
@@ -98,18 +100,32 @@ const generatePDF = async (data) => {
 };
 
 const downloadPDF = async () => {
-  try {
-    const fileName = 'yourfile.pdf';
-    await Filesystem.writeFile({
-      path: fileName,
-      data: pdfSrc.value,
-      directory: Capacitor.getPlatform() === 'android' ? Directory.Documents : Directory.Data,
-      recursive: true
-    });
+  if (Capacitor.isNativePlatform()) {
+    const fileName = 'report.pdf';
+    try {
+      const savedFile = await Filesystem.writeFile({
+        path: fileName,
+        data: pdfSrc.value,
+        directory: Directory.Documents,
+        recursive: true
+      });
 
-    console.log(`PDF сохранен: ${fileName}`);
-  } catch (error) {
-    console.error('Ошибка при сохранении PDF:', error);
+      // Путь к файлу для открытия
+      const path = savedFile.uri;
+
+      // Открываем файл в браузере
+      await Browser.open({ url: path });
+    } catch (error) {
+      console.error('Ошибка при сохранении или открытии PDF (update code):', error);
+    }
+  } else {
+    // Для веб-браузера
+    const url = window.URL.createObjectURL(new Blob([pdfSrc.value], { type: 'application/pdf' }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'report.pdf';
+    a.click();
+    window.URL.revokeObjectURL(url);
   }
 };
 </script>
