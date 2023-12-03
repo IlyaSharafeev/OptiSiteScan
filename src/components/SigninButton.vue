@@ -23,11 +23,12 @@ const callbackLoginWEB = async (response: any) => {
   try {
     const accessToken = response.access_token;
     await searchStore.saveToken(response.access_token);
-    await axios.get('https://www.googleapis.com/oauth2/v1/userinfo?alt=json', {
+    const res = await axios.get('https://www.googleapis.com/oauth2/v1/userinfo?alt=json', {
       headers: {
         Authorization: `Bearer ${response.access_token}`,
       },
     })
+    console.log(res.data);
     searchStore.isLoading = false;
   } catch (err) {
     searchStore.isLoading = false;

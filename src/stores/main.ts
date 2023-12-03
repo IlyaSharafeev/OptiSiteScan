@@ -14,6 +14,8 @@ export const useSearchStore = defineStore("search", () => {
     const searchData = ref<ScanData | null | any>(null);
     const isLoading = ref(false);
     const tokenStore = ref("");
+    const emailUser = ref("");
+    const nameUser = ref("");
 
     const scanURL = async (link: string) => {
         isLoading.value = true;
@@ -34,7 +36,7 @@ export const useSearchStore = defineStore("search", () => {
         }
     };
 
-    const sendPDF = async (file) => {
+    const sendPDF = async (file: Blob) => {
         console.log(file);
         isLoading.value = true;
         try {
@@ -89,6 +91,8 @@ export const useSearchStore = defineStore("search", () => {
         tokenStore,
         searchData,
         isLoading,
+        emailUser,
+        nameUser,
         saveToken,
         getToken,
         logout,

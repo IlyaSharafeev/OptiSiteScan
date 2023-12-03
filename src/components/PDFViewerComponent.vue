@@ -1,9 +1,15 @@
 <template>
-  <div>
+  <div class="pdf-buttons-container">
     <!-- Кнопки для работы с PDF -->
-    <button @click="generatePDF(pdfData[0])">Сгенерировать PDF</button>
-    <button @click="downloadPDF" style="background-color: red" :disabled="!pdfSrc">Скачать PDF</button>
-    <button @click="sendPDF" style="background-color: red" :disabled="!pdfSrc">Send PDF</button>
+    <button class="pdf-button generate" @click="generatePDF(pdfData[0])">
+      <ion-icon aria-hidden="true" :icon="fileTrayFull" /> Generate PDF
+    </button>
+    <button class="pdf-button download" @click="downloadPDF" :disabled="!pdfSrc">
+      <ion-icon aria-hidden="true" :icon="download" /> Download PDF
+    </button>
+    <button class="pdf-button send" @click="sendPDF" :disabled="!pdfSrc">
+      <ion-icon aria-hidden="true" :icon="send" /> Send PDF
+    </button>
   </div>
 </template>
 
@@ -16,6 +22,8 @@ import {useSearchStore} from "@/stores/main";
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Capacitor } from '@capacitor/core';
 import { Browser } from '@capacitor/browser';
+import {fileTrayFull, download, send} from "ionicons/icons";
+import {IonIcon} from "@ionic/vue";
 
 const searchStore = useSearchStore();
 const pdfSrc = ref(null);
@@ -153,3 +161,49 @@ const sendPDF = async () => {
   }
 };
 </script>
+
+<style>
+.pdf-buttons-container {
+  display: flex;
+  justify-content: space-around;
+  margin: 20px;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.pdf-button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  display: flex;
+  flex-direction: row-reverse;
+  gap: 20px;
+  justify-content: center;
+}
+
+.pdf-button i {
+  margin-right: 5px;
+}
+
+.pdf-button.generate {
+  background-color: #4CAF50;
+}
+
+.pdf-button.download {
+  background-color: #f44336;
+}
+
+.pdf-button.send {
+  background-color: #2196F3;
+}
+
+.pdf-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+</style>
