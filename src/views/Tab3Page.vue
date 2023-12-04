@@ -1,22 +1,22 @@
 <template>
   <ion-page>
     <!-- Боковое меню с функционалом -->
-<!--    <ion-menu side="end" menuId="sideMenu" contentId="main-content">-->
-<!--      <ion-header>-->
-<!--        <ion-toolbar>-->
-<!--          <ion-title v-if="!editMode">{{ userName }}</ion-title>-->
-<!--          <ion-input v-else v-model="userNameEditable" placeholder="Введите имя" />-->
-<!--          <ion-buttons slot="end">-->
-<!--            <ion-button v-if="!editMode" @click="enableEditMode">-->
-<!--              <ion-icon :icon="pencilOutline"></ion-icon>-->
-<!--            </ion-button>-->
-<!--            <ion-button v-if="editMode" @click="confirmEdit">-->
-<!--              <ion-icon :icon="checkmarkOutline"></ion-icon>-->
-<!--            </ion-button>-->
-<!--          </ion-buttons>-->
-<!--        </ion-toolbar>-->
-<!--      </ion-header>-->
-<!--      <ion-content>-->
+    <ion-menu side="end" menuId="sideMenu" contentId="main-content">
+      <ion-header>
+        <ion-toolbar>
+          <ion-title v-if="!editMode"></ion-title>
+          <ion-input v-else v-model="userNameEditable" placeholder="Введите имя" />
+          <ion-buttons slot="end">
+            <ion-button v-if="!editMode" @click="enableEditMode">
+              <ion-icon :icon="pencilOutline"></ion-icon>
+            </ion-button>
+            <ion-button v-if="editMode" @click="confirmEdit">
+              <ion-icon :icon="checkmarkOutline"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content>
 <!--        <ion-list>-->
 <!--          <ion-item @click="downloadPdf">Скачать PDF</ion-item>-->
 <!--          <ion-item @click="sendEmail">Отправить на Email</ion-item>-->
@@ -25,11 +25,11 @@
 <!--            <ion-toggle v-model="darkMode" aria-label="toggle theme"></ion-toggle>-->
 <!--          </ion-item>-->
 <!--        </ion-list>-->
-<!--        <ion-item lines="none" class="logout-button" @click="logout">-->
-<!--          <ion-label color="danger">Выйти</ion-label>-->
-<!--        </ion-item>-->
-<!--      </ion-content>-->
-<!--    </ion-menu>-->
+        <ion-item lines="none" class="logout-button" @click="logout">
+          <ion-label color="danger">Exit</ion-label>
+        </ion-item>
+      </ion-content>
+    </ion-menu>
 
     <!-- Основное содержимое страницы -->
     <ion-content id="main-content" class="ion-padding">
