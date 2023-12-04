@@ -29,6 +29,7 @@ const callbackLoginWEB = async (response: any) => {
       },
     })
     await searchStore.saveEmail(res.data.email);
+    await searchStore.saveName(res.data.name);
     searchStore.isLoading = false;
   } catch (err) {
     searchStore.isLoading = false;
@@ -40,9 +41,8 @@ const callbackLoginNATIVE = async (response: any) => {
   searchStore.isLoading = true;
   try {
     await searchStore.saveToken(response.authentication.accessToken);
-    console.log(response);
-    await searchStore.saveEmail(response.name);
     await searchStore.saveEmail(response.email);
+    await searchStore.saveName(response.displayName);
     searchStore.isLoading = false;
   } catch (err) {
     searchStore.isLoading = false;
