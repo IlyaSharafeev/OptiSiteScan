@@ -40,13 +40,15 @@ export const useSearchStore = defineStore("search", () => {
         console.log(file);
         isLoading.value = true;
         const email = await getEmail();
+        const name = await getName();
         try {
             // Создаем экземпляр FormData
             const formData = new FormData();
             //@ts-ignore
             formData.append('gmail', email);
-            formData.append('link', ""); // Если требуется, добавьте реальную ссылку
-            formData.append('name', "Ilya");
+            // formData.append('link', ""); // Если требуется, добавьте реальную ссылку
+            //@ts-ignore
+            formData.append('name', name);
             formData.append('file', file); // Предполагается, что 'file' это Blob или File
 
             const response = await axios.post('https://opti-site-scan-backend.onrender.com/sendpdf', formData, {
@@ -84,7 +86,19 @@ export const useSearchStore = defineStore("search", () => {
             value: email,
         });
         emailUser.value = email;
-        await router.push({name: "tab1"});
+    };
+
+    const saveName = async (name: string) => {
+        await Preferences.set({
+            key: 'name',
+            value: name,
+        });
+        nameUser.value = name;
+    };
+
+    const getName = async () => {
+        const { value } = await Preferences.get({ key: 'name' });
+        return value;
     };
 
     const getEmail = async () => {
@@ -113,10 +127,12 @@ export const useSearchStore = defineStore("search", () => {
         saveToken,
         getToken,
         getEmail,
+        getName,
         logout,
         scanURL,
         getSearchData,
         sendPDF,
         saveEmail,
+        saveName,
     };
 });

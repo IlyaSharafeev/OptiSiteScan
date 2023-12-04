@@ -40,6 +40,8 @@ const callbackLoginNATIVE = async (response: any) => {
   searchStore.isLoading = true;
   try {
     await searchStore.saveToken(response.authentication.accessToken);
+    console.log(response);
+    await searchStore.saveEmail(response.name);
     await searchStore.saveEmail(response.email);
     searchStore.isLoading = false;
   } catch (err) {
