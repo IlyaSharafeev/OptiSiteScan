@@ -39,11 +39,12 @@ export const useSearchStore = defineStore("search", () => {
     const sendPDF = async (file: Blob) => {
         console.log(file);
         isLoading.value = true;
+        const email = await getEmail();
         try {
             // Создаем экземпляр FormData
             const formData = new FormData();
             //@ts-ignore
-            formData.append('gmail', getEmail());
+            formData.append('gmail', email);
             formData.append('link', ""); // Если требуется, добавьте реальную ссылку
             formData.append('name', "Ilya");
             formData.append('file', file); // Предполагается, что 'file' это Blob или File
