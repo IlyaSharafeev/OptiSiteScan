@@ -10,6 +10,13 @@
     <button class="pdf-button send" @click="sendPDF" :disabled="!pdfSrc">
       <ion-icon aria-hidden="true" :icon="send" /> Send PDF
     </button>
+
+    <ion-toast
+        :is-open="showToast"
+        :message="toastMessage"
+        :duration="2000"
+        @didDismiss="() => showToast = false">
+    </ion-toast>
   </div>
 </template>
 
@@ -23,11 +30,13 @@ import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Capacitor } from '@capacitor/core';
 import { Browser } from '@capacitor/browser';
 import {fileTrayFull, download, send} from "ionicons/icons";
-import {IonIcon} from "@ionic/vue";
+import {IonIcon, IonToast} from "@ionic/vue";
 
 const searchStore = useSearchStore();
 const pdfSrc = ref(null);
 const pdfFormData = ref(null);
+const showToast = ref(false);
+const toastMessage = ref("");
 
 const pdfData = computed(() => searchStore.searchData);
 onMounted(async () => {
@@ -108,6 +117,9 @@ const generatePDF = async (data) => {
   const blobString = new Blob([pdfOutput], { type: 'application/pdf' });
   pdfSrc.value = blobString;
 
+  toastMessage.value = "PDF has been generate!";
+  showToast.value = true;
+
   const blob = doc.output("blob");
   pdfSrc.value = URL.createObjectURL(blob);
   pdfFormData.value = new FormData();
@@ -156,6 +168,8 @@ const sendPDF = async () => {
       await searchStore.sendPDF(value); // Отправка FormData
     }
     console.log("Отправка PDF");
+    toastMessage.value = "PDF has been sent!";
+    showToast.value = true;
   } else {
     console.log("PDF не сгенерирован");
   }
