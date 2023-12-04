@@ -42,7 +42,8 @@ export const useSearchStore = defineStore("search", () => {
         try {
             // Создаем экземпляр FormData
             const formData = new FormData();
-            formData.append('gmail', emailUser.value);
+            //@ts-ignore
+            formData.append('gmail', getEmail());
             formData.append('link', ""); // Если требуется, добавьте реальную ссылку
             formData.append('name', "Ilya");
             formData.append('file', file); // Предполагается, что 'file' это Blob или File
@@ -76,6 +77,21 @@ export const useSearchStore = defineStore("search", () => {
         await router.push({name: "tab1"});
     };
 
+    const saveEmail = async (email: string) => {
+        await Preferences.set({
+            key: 'email',
+            value: email,
+        });
+        emailUser.value = email;
+        await router.push({name: "tab1"});
+    };
+
+    const getEmail = async () => {
+        const { value } = await Preferences.get({ key: 'email' });
+        return value;
+    };
+
+
     const getToken = async () => {
         const { value } = await Preferences.get({ key: 'token' });
         return value;
@@ -95,9 +111,11 @@ export const useSearchStore = defineStore("search", () => {
         nameUser,
         saveToken,
         getToken,
+        getEmail,
         logout,
         scanURL,
         getSearchData,
         sendPDF,
+        saveEmail,
     };
 });

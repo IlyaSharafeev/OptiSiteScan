@@ -28,7 +28,7 @@ const callbackLoginWEB = async (response: any) => {
         Authorization: `Bearer ${response.access_token}`,
       },
     })
-    searchStore.emailUser = res.data.email;
+    await searchStore.saveEmail(res.data.email);
     searchStore.isLoading = false;
   } catch (err) {
     searchStore.isLoading = false;
@@ -40,7 +40,7 @@ const callbackLoginNATIVE = async (response: any) => {
   searchStore.isLoading = true;
   try {
     await searchStore.saveToken(response.authentication.accessToken);
-    console.log(response);
+    await searchStore.saveEmail(response.email);
     searchStore.isLoading = false;
   } catch (err) {
     searchStore.isLoading = false;
