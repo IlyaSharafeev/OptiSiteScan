@@ -28,7 +28,7 @@ const callbackLoginWEB = async (response: any) => {
         Authorization: `Bearer ${response.access_token}`,
       },
     })
-    console.log(res.data);
+    searchStore.emailUser = res.data.email;
     searchStore.isLoading = false;
   } catch (err) {
     searchStore.isLoading = false;

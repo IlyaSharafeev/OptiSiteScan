@@ -1,40 +1,40 @@
 <template>
   <ion-page>
     <!-- Боковое меню с функционалом -->
-    <ion-menu side="end" menuId="sideMenu" contentId="main-content">
-      <ion-header>
-        <ion-toolbar>
-          <ion-title v-if="!editMode">{{ userName }}</ion-title>
-          <ion-input v-else v-model="userNameEditable" placeholder="Введите имя" />
-          <ion-buttons slot="end">
-            <ion-button v-if="!editMode" @click="enableEditMode">
-              <ion-icon :icon="pencilOutline"></ion-icon>
-            </ion-button>
-            <ion-button v-if="editMode" @click="confirmEdit">
-              <ion-icon :icon="checkmarkOutline"></ion-icon>
-            </ion-button>
-          </ion-buttons>
-        </ion-toolbar>
-      </ion-header>
-      <ion-content>
-        <ion-list>
-          <ion-item @click="downloadPdf">Скачать PDF</ion-item>
-          <ion-item @click="sendEmail">Отправить на Email</ion-item>
-          <ion-item @click="toggleDarkMode">
-            <ion-label>Темная тема</ion-label>
-            <ion-toggle v-model="darkMode" aria-label="toggle theme"></ion-toggle>
-          </ion-item>
-        </ion-list>
-        <ion-item lines="none" class="logout-button" @click="logout">
-          <ion-label color="danger">Выйти</ion-label>
-        </ion-item>
-      </ion-content>
-    </ion-menu>
+<!--    <ion-menu side="end" menuId="sideMenu" contentId="main-content">-->
+<!--      <ion-header>-->
+<!--        <ion-toolbar>-->
+<!--          <ion-title v-if="!editMode">{{ userName }}</ion-title>-->
+<!--          <ion-input v-else v-model="userNameEditable" placeholder="Введите имя" />-->
+<!--          <ion-buttons slot="end">-->
+<!--            <ion-button v-if="!editMode" @click="enableEditMode">-->
+<!--              <ion-icon :icon="pencilOutline"></ion-icon>-->
+<!--            </ion-button>-->
+<!--            <ion-button v-if="editMode" @click="confirmEdit">-->
+<!--              <ion-icon :icon="checkmarkOutline"></ion-icon>-->
+<!--            </ion-button>-->
+<!--          </ion-buttons>-->
+<!--        </ion-toolbar>-->
+<!--      </ion-header>-->
+<!--      <ion-content>-->
+<!--        <ion-list>-->
+<!--          <ion-item @click="downloadPdf">Скачать PDF</ion-item>-->
+<!--          <ion-item @click="sendEmail">Отправить на Email</ion-item>-->
+<!--          <ion-item @click="toggleDarkMode">-->
+<!--            <ion-label>Темная тема</ion-label>-->
+<!--            <ion-toggle v-model="darkMode" aria-label="toggle theme"></ion-toggle>-->
+<!--          </ion-item>-->
+<!--        </ion-list>-->
+<!--        <ion-item lines="none" class="logout-button" @click="logout">-->
+<!--          <ion-label color="danger">Выйти</ion-label>-->
+<!--        </ion-item>-->
+<!--      </ion-content>-->
+<!--    </ion-menu>-->
 
     <!-- Основное содержимое страницы -->
     <ion-content id="main-content" class="ion-padding">
         <div class="bookmark-button" @click="openMenu">
-          <ion-icon class="bookmark-icon"></ion-icon>
+          <ion-icon class="bookmark-icon" :icon="lockClosed"></ion-icon>
         </div>
       <PDFViewerComponent/>
     </ion-content>
@@ -60,7 +60,7 @@ import {
   IonButtons,
   menuController
 } from '@ionic/vue';
-import {pencilOutline, checkmarkOutline} from 'ionicons/icons';
+import {pencilOutline, checkmarkOutline, lockClosed} from 'ionicons/icons';
 import PDFViewerComponent from "@/components/PDFViewerComponent.vue";
 import { useSearchStore } from "@/stores/main";
 
@@ -140,7 +140,6 @@ ion-fab {
   width: 17px; /* Ширина закладки */
   height: 170px; /* Высота закладки */
   background-color: #4caf50; /* Цвет фона закладки */
-  color: #4caf50; /* Цвет текста/иконки */
   box-shadow: -3px 0 5px rgba(0, 0, 0, 0.2); /* Тень с левой стороны */
   display: flex; /* Для центрирования иконки внутри */
   align-items: center; /* Вертикальное выравнивание */
@@ -209,6 +208,6 @@ ion-fab {
 }
 
 .bookmark-icon {
-  font-size: 24px; /* Размер иконки */
+  font-size: 12px; /* Размер иконки */
 }
 </style>

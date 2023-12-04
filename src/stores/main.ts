@@ -42,7 +42,7 @@ export const useSearchStore = defineStore("search", () => {
         try {
             // Создаем экземпляр FormData
             const formData = new FormData();
-            formData.append('gmail', "ilyasharafeev01@gmail.com");
+            formData.append('gmail', emailUser.value);
             formData.append('link', ""); // Если требуется, добавьте реальную ссылку
             formData.append('name', "Ilya");
             formData.append('file', file); // Предполагается, что 'file' это Blob или File
