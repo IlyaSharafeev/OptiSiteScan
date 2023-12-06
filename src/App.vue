@@ -16,7 +16,9 @@ const searchStore = useSearchStore();
 
 onMounted(async () => {
   const {value} = await Preferences.get({ key: 'theme' });
-  searchStore.currentTheme = value;
+  if(typeof value == 'string') {
+    searchStore.currentTheme = value;
+  }
   if(value === 'light') {
     document.body.setAttribute('color-theme', 'light');
     document.body.classList.remove('dark');

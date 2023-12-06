@@ -158,7 +158,7 @@ import {useSearchStore} from "@/stores/main";
 import {useRouter} from 'vue-router';
 import axios from 'axios';
 import { Camera, CameraResultType } from '@capacitor/camera';
-import { Preferences } from '@capacitor/preferences';
+import {GetResult, Preferences} from '@capacitor/preferences';
 import { copy as copyIcon } from 'ionicons/icons';
 import {ref, onMounted, computed, nextTick, onUnmounted} from 'vue';
 import { menuController } from '@ionic/vue';
@@ -188,8 +188,6 @@ const ellipsisButtonRef = ref<HTMLElement | null>(null); // Ссылка на к
 const showConfirmClear = ref(false);
 const canvasRef = ref(null) as any; // ref для доступа к элементу canvas
 const canvasKey = ref(0);
-const backgroundTheme = ref(null);
-
 
 const initializeCanvas = () => {
   nextTick(() => {
@@ -199,7 +197,6 @@ const initializeCanvas = () => {
 
 onMounted(async () => {
   initializeCanvas();
-  backgroundTheme.value = await Preferences.get({ key: 'theme' })
 });
 
 

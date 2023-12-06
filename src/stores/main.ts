@@ -16,7 +16,7 @@ export const useSearchStore = defineStore("search", () => {
     const tokenStore = ref("");
     const emailUser = ref("");
     const nameUser = ref("");
-    const currentTheme = ref(null);
+    const currentTheme = ref("");
 
     const scanURL = async (link: string) => {
         isLoading.value = true;
