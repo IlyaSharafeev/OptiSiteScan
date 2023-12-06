@@ -16,6 +16,7 @@ export const useSearchStore = defineStore("search", () => {
     const tokenStore = ref("");
     const emailUser = ref("");
     const nameUser = ref("");
+    const currentTheme = ref(null);
 
     const scanURL = async (link: string) => {
         isLoading.value = true;
@@ -68,6 +69,7 @@ export const useSearchStore = defineStore("search", () => {
         const res = await Preferences.get({ key: 'searchData'});
         if (res.value) {
             searchData.value = JSON.parse(res.value);
+            return;
         }
     }
 
@@ -93,6 +95,7 @@ export const useSearchStore = defineStore("search", () => {
             key: 'name',
             value: name,
         });
+        console.log(name);
         nameUser.value = name;
     };
 
@@ -124,6 +127,7 @@ export const useSearchStore = defineStore("search", () => {
         isLoading,
         emailUser,
         nameUser,
+        currentTheme,
         saveToken,
         getToken,
         getEmail,

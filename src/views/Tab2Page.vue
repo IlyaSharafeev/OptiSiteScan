@@ -42,7 +42,12 @@
         </ion-card>
       </div>
     </ion-content>
-    <ion-button v-show="!showFilterModal" class="floating-filter-button" @click="openFilterModal">
+    <ion-content v-else class="ion-padding">
+      <div class="no-data">
+        <div>There is no data about your site yet, but you can <span @click="router.push('/')">add it</span></div>
+      </div>
+    </ion-content>
+    <ion-button v-show="!showFilterModal && searchStore.searchData" class="floating-filter-button" @click="openFilterModal">
       <ion-icon :icon="filterIcon" :color="getFilterIconColor()"></ion-icon>
     </ion-button>
     <ion-modal :is-open="showFilterModal" css-class="custom-modal">
@@ -182,7 +187,9 @@ const getProgressBarColor = (score) => {
 ion-card {
   margin: 10px;
   border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  --background: var(--ion-background-color);
+  --color: var(--ion-text-color);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
 }
 
 ion-chip {
@@ -198,60 +205,45 @@ ion-chip ion-icon {
 }
 
 ion-page {
-  --background: #121212; /* Тёмный фон */
-  --ion-text-color: #4caf50; /* Зеленый текст, напоминающий терминал */
+  --background: #121212;
+  --ion-text-color: #4caf50;
 }
 
 ion-toolbar {
-  --background: #1a1a1a; /* Тёмный фон для тулбара */
-  --color: #4caf50; /* Зеленый текст */
+  --background: var(--ion-toolbar-background);
+  --color: var(--ion-text-color);
 }
 
 ion-segment-button::part(indicator-background) {
-  background: #4caf50;
+  background: var(--ion-background-color);
   letter-spacing: 2px;
 }
 
-/* Material Design styles */
 ion-segment-button.md::part(native) {
-  color: white;
-}
-
-.segment-button-checked.md::part(native) {
-  color: #4caf50;
+  color: var(--ion-text-color);
 }
 
 ion-segment-button.md::part(indicator-background) {
   height: 4px;
+  background-color: var(--ion-text-color);
 }
 
 /* iOS styles */
 ion-segment-button.ios::part(native) {
-  color: #4caf50;
-}
-
-.segment-button-checked.ios::part(native) {
-  color: #fff;
+  color: var(--ion-text-color);
 }
 
 ion-segment-button.ios::part(indicator-background) {
   border-radius: 20px;
 }
 
-ion-card {
-  --background: #262626; /* Тёмный фон для карточек */
-  --color: #fff; /* Белый текст */
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-}
-
 ion-card-header {
-  --background: #333; /* Тёмный фон для заголовка карточки */
-  --color: #4caf50; /* Зеленый текст */
+  --background: var(--ion-background-color);
+  --color: var(--ion-text-color);
 }
 
 ion-card-content {
-  --background: #262626; /* Тёмный фон для содержимого карточки */
+  --background: #262626;
   --color: #fff; /* Белый текст */
 }
 
@@ -271,34 +263,22 @@ ion-button {
 }
 
 .floating-filter-button {
-  position: fixed; /* Фиксированное позиционирование относительно вьюпорта */
-  right: 20px; /* Отступ справа */
-  bottom: 20px; /* Отступ снизу */
-  color: #fff; /* Белый цвет текста */
-  width: 56px; /* Ширина */
-  height: 56px; /* Высота */
-  display: flex; /* Flexbox для центрирования иконки */
-  justify-content: center; /* Горизонтальное центрирование */
-  align-items: center; /* Вертикальное центрирование */
-  box-shadow: 0 4px 8px rgba(0,0,0,0.3); /* Тень для эффекта подъема */
-  z-index: 1000; /* Z-index выше, чем у других элементов страницы */
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  color: var(--ion-text-color);
+  width: 56px;
+  height: 56px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  z-index: 1000;
   border-radius: 100%;
 }
 
 .floating-filter-button ion-icon {
-  font-size: 28px; /* Размер иконки */
-}
-
-.custom-modal {
-  --min-width: 50%; /* Минимальная ширина модального окна */
-  --min-height: 105px; /* Минимальная высота модального окна */
-  --max-width: 50%; /* Максимальная ширина модального окна */
-  --max-height: 265px; /* Максимальная высота модального окна */
-}
-
-/* Стили для фона модального окна, если нужно его изменить */
-.custom-modal::part(backdrop) {
-  background: rgba(0, 0, 0, 0.5); /* полупрозрачный черный фон */
+  font-size: 28px;
 }
 
 .modal-item {

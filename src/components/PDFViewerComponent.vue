@@ -161,10 +161,8 @@ const downloadPDF = async () => {
 };
 
 const sendPDF = async () => {
-  console.log()
   if (pdfFormData.value) {
     for (let [key, value] of pdfFormData.value.entries()) {
-      console.log(`${key}: `, value);
       await searchStore.sendPDF(value); // Отправка FormData
     }
     console.log("Отправка PDF");
@@ -189,7 +187,7 @@ const sendPDF = async () => {
   padding: 10px 15px;
   border: none;
   border-radius: 5px;
-  color: white;
+  color: var(--ion-text-color);
   font-weight: bold;
   font-size: 18px;
   cursor: pointer;

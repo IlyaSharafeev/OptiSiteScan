@@ -34,15 +34,15 @@ const searchStore = useSearchStore();
 <style scoped lang="scss">
 /* Стилизация ion-tab-bar */
 ion-tab-bar {
-  --background: #1a1a1a; /* Тёмный фон для панели вкладок */
-  --color-selected: #4caf50; /* Цвет выбранной вкладки */
-  --color: #757575; /* Цвет иконок по умолчанию */
+  --background: var(--ion-background-color); /* Тёмный фон для панели вкладок */
+  --color-selected: var(--ion-text-color); /* Цвет выбранной вкладки */
+  --color: var(--ion-text-color); /* Цвет иконок по умолчанию */
   --tab-button-padding-bottom: 6px; /* Отступ снизу для кнопок вкладок */
 }
 
 /* Стилизация ion-tab-button */
 ion-tab-button {
-  --ripple-color: #4caf50; /* Цвет волны при нажатии */
+  --ripple-color: var(--ion-color-step-900); /* Цвет волны при нажатии */
 }
 
 /* Стилизация иконок внутри ion-tab-button */

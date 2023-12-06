@@ -112,16 +112,15 @@
 
     <ion-alert
         :is-open="showConfirmClear"
-        header="Подтверждение"
-        message="Ты уверен, что хочешь очистить историю поиска?"
+        message="Are you sure you want to clear your search history?"
         :buttons="[
     {
-      text: 'Нет',
+      text: 'No',
       role: 'cancel',
       handler: () => { showConfirmClear = false; }
     },
     {
-      text: 'Да',
+      text: 'Yes',
       handler: () => { clearHistoryConfirmed(); }
     }
   ]"
@@ -189,6 +188,7 @@ const ellipsisButtonRef = ref<HTMLElement | null>(null); // Ссылка на к
 const showConfirmClear = ref(false);
 const canvasRef = ref(null) as any; // ref для доступа к элементу canvas
 const canvasKey = ref(0);
+const backgroundTheme = ref(null);
 
 
 const initializeCanvas = () => {
@@ -197,8 +197,9 @@ const initializeCanvas = () => {
   });
 };
 
-onMounted(() => {
+onMounted(async () => {
   initializeCanvas();
+  backgroundTheme.value = await Preferences.get({ key: 'theme' })
 });
 
 
@@ -223,7 +224,11 @@ const canvasApp = () => {
   }
 
   const drawScreen = () => {
-    ctx.fillStyle = 'rgba(0,0,0,.05)';
+    if(searchStore.currentTheme === "dark") {
+      ctx.fillStyle = 'rgba(0,0,0,0.05)';
+    } else {
+      ctx.fillStyle = 'rgba(255,255,255,0.05)';
+    }
     ctx.fillRect(0, 0, w, h);
     ctx.fillStyle = '#0f0'; // Зеленый цвет текста
     ctx.font = '10px Georgia';
@@ -254,7 +259,7 @@ const updateMenuPosition = () => {
   // @ts-ignore
   clearMenuRef.value.style.top = `${buttonRect.bottom}px`;
   // @ts-ignore
-  clearMenuRef.value.style.left = `${buttonRect.left}px`;
+  clearMenuRef.value.style.left = `${buttonRect.left - 120}px`;
 };
 
 const toggleClearMenu = () => {
@@ -269,9 +274,6 @@ const toggleClearMenu = () => {
 onMounted(async () => {
   searchHistory.value = await getSearchHistory();
 });
-
-
-
 
 onClickOutside(clearMenuRef, () => showClearMenu.value = false)
 
@@ -415,46 +417,35 @@ const copyToClipboard = async (text: string) => {
   height: 100%;
   z-index: 1;
 }
-
-.input-item {
-  z-index: 2;
-}
 /* Стиль для кнопок в теле страницы */
 ion-button {
-  --background: #333; /* Тёмный фон для кнопки */
-  --background-activated: #444; /* Фон для кнопки при нажатии */
-  --background-focused: #444; /* Фон для кнопки при фокусе */
-  --background-hover: #444; /* Фон для кнопки при наведении */
-  --color: #4caf50; /* Цвет текста/иконок кнопки */
+  --background: var(--ion-background-color); /* Тёмный фон для кнопки */
+  --color: var(--ion-color-step-50); /* Цвет текста/иконок кнопки */
   --border-radius: 4px; /* Скругление углов кнопки */
 }
 
 /* Стиль для кнопок в тулбаре */
 ion-toolbar ion-button {
   --background: transparent; /* Прозрачный фон */
-  --color: #4caf50; /* Цвет иконок и текста */
+  --color: var(--ion-text-color); /* Цвет иконок и текста */
 }
 
 /* Стиль для активированных кнопок в тулбаре */
 ion-toolbar ion-button:active {
   --background: #333; /* Тёмный фон для активной кнопки */
-  --color: #4caf50; /* Цвет текста/иконок активной кнопки */
+  --color: var(--ion-text-color); /* Цвет текста/иконок активной кнопки */
 }
 
 /* Стиль для кнопок в футере */
 ion-footer ion-button {
-  --background: #333; /* Тёмный фон для кнопки */
-  --color: #4caf50; /* Цвет текста/иконок кнопки */
+  --background: var(--ion-background-color); /* Тёмный фон для кнопки */
+  --color: var(--ion-text-color); /* Цвет текста/иконок кнопки */
 }
 
-/* Стиль для ion-menu-button */
-ion-menu-button {
-  --color: #4caf50; /* Цвет кнопки меню */
-}
 
 /* Стиль для ion-icon внутри кнопок */
 ion-button ion-icon {
-  --color: #4caf50; /* Цвет иконок в кнопках */
+  --color: var(--ion-text-color); /* Цвет иконок в кнопках */
 }
 
 /* Общий тёмный фон для страницы */
@@ -465,52 +456,38 @@ ion-page {
 
 /* Стиль для тулбара */
 ion-toolbar {
-  --background: #1a1a1a; /* Тёмный фон для тулбара */
-  --color: #fff; /* Белый текст */
+  --background: var(--ion-background-color); /* Тёмный фон для тулбара */
+  --color: var(--ion-text-color); /* Белый текст */
 }
 
 /* Стиль для кнопок меню */
 ion-menu-button {
-  --color: #4caf50; /* Цвет кнопки меню */
+  --color: var(--ion-text-color); /* Цвет кнопки меню */
 }
 
-/* Изменения для меню */
-ion-menu {
-  --background: #1a1a1a; /* Тёмный фон для меню */
-}
 
 /* Стиль для заголовка в меню */
 ion-title.menu-title {
-  color: #4caf50; /* Цвет заголовка */
-}
-
-/* Стиль для элементов списка в истории поиска */
-.search-history-item {
-  --background: #262626; /* Тёмный фон для элемента */
-  --border: 1px solid #333; /* Граница элемента */
-  --color: #b3b3b3; /* Светлый текст */
+  color: var(--ion-text-color); /* Цвет заголовка */
 }
 
 /* Стиль для иконок в элементах списка */
 ion-icon {
-  color: #4caf50; /* Цвет иконок */
+  color: var(--ion-text-color); /* Цвет иконок */
 }
 
 
 /* Стиль для футера */
 ion-footer {
-  --background: #1a1a1a; /* Тёмный фон для футера */
+  --background: var(--ion-color-step-550); /* Тёмный фон для футера */
 }
 
 .clear-menu {
   position: absolute;
   border-radius: 5px;
   z-index: 99999;
-}
-
-.clear-menu ion-item {
-  cursor: pointer;
-  z-index: 9999;
+  width: 150px;
+  height: 50px;
 }
 
 ion-content {
@@ -526,6 +503,7 @@ ion-content {
   width: 100%; /* Можно задать конкретную ширину, если нужно */
   padding: 0 10px;
   --border-radius: 20px;
+  z-index: 2;
 }
 
 ion-title {
@@ -568,17 +546,17 @@ ion-list {
 
 /* Тёмный стиль для ion-menu и его компонентов */
 ion-menu {
-  --background: #1e1e1e; /* Тёмный фон для меню */
+  --background: var(--ion-background-color); /* Тёмный фон для меню */
 }
 
 ion-header {
-  --background: #121212; /* Тёмный фон для шапки меню */
+  --background: var(--ion-background-color); /* Тёмный фон для шапки меню */
 }
 
 /* Стилизация кнопок в тулбаре меню */
 .toolbar ion-button {
-  --background: #2a2a2a; /* Тёмный фон для кнопок */
-  --color: #4caf50; /* Цвет иконок и текста */
+  --background: var(--ion-background-color); /* Тёмный фон для кнопок */
+  --color: var(--ion-text-color); /* Цвет иконок и текста */
 }
 
 /* Стилизация элементов списка истории поиска */
@@ -590,34 +568,29 @@ ion-header {
   margin-bottom: 10px;
   width: 100%; /* Устанавливаем ширину на auto или 100% */
   padding: 0 10px;
-  --background: #2a2a2a; /* Тёмный фон для элементов списка */
-  --color: #fff; /* Светлый текст */
-  --border-color: #4caf50; /* Цвет границы элементов списка */
+  --background: var(--ion-input-item); /* Тёмный фон для элементов списка */
+  --color: var(--ion-text-color); /* Светлый текст */
+  --border-color: var(--ion-border-color); /* Цвет границы элементов списка */
 }
 
 /* Стилизация иконок в элементах списка */
 .search-history-item ion-icon {
-  --color: #4caf50; /* Цвет иконок */
+  --color: var(--ion-text-color); /* Цвет иконок */
 }
 
 /* Стилизация кнопки для очистки истории */
 .clear-menu ion-item {
-  --background: #2a2a2a; /* Тёмный фон для кнопки */
-  --color: #fff; /* Светлый текст */
+  --background: var(--ion-background-color); /* Тёмный фон для кнопки */
+  --color: var(--ion-text-color); /* Светлый текст */
   --ion-item-background: #2a2a2a; /* Фон для элемента ion-item */
-  border: 1px solid #4caf50; /* Граница для кнопки */
+  border: 1px solid var(--ion-border-color); /* Граница для кнопки */
   margin: 0.5rem; /* Отступы вокруг кнопки */
-  padding: 0.5rem; /* Внутренние отступы кнопки */
+  font-weight: bold;
 }
 
 /* Стилизация подтверждающего ion-alert */
 ion-alert {
-  --background: #2a2a2a; /* Тёмный фон для алерта */
-  --color: #fff; /* Светлый текст */
-}
-
-/* Стилизация спиннера загрузки */
-.spinner-overlay {
-  --color: #4caf50; /* Цвет спиннера */
+  --background: var(--ion-background-color); /* Тёмный фон для алерта */
+  --color: var(--ion-text-color); /* Светлый текст */
 }
 </style>
