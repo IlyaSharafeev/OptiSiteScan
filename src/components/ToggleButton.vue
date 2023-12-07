@@ -27,7 +27,7 @@ onMounted(async () => {
 })
 
 const searchStore = useSearchStore();
-const toggleTheme = async (event: any) => {
+const toggleTheme = async (event: Event) => {
   console.log(event);
   console.log(searchStore.currentTheme);
   if(searchStore.currentTheme === 'dark') {
