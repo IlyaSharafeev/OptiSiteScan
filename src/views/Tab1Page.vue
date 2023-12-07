@@ -7,7 +7,7 @@
     <ion-header>
       <ion-toolbar class="toolbar">
         <ion-buttons slot="start">
-          <ion-menu-button :auto-hide="false"></ion-menu-button>
+          <ion-menu-button class="header-menu-button" :auto-hide="false"></ion-menu-button>
         </ion-buttons>
       </ion-toolbar>
     </ion-header>
@@ -15,41 +15,41 @@
     <ion-menu side="start" menuId="first" contentId="main-content">
       <ion-header>
         <ion-toolbar>
+
           <ion-buttons slot="start">
-
-            <ion-button class="close-button" @click="closeMenu">
-              <ion-icon :icon="close"></ion-icon>
-            </ion-button>
-
+            <div class="header-menu-button" @click="closeMenu">
+              <ion-icon size="small" :icon="close"></ion-icon>
+            </div>
           </ion-buttons>
+
           <ion-buttons slot="end">
 
-            <ion-button class="sort-button" @click="toggleSortOrder">
+            <div class="header-menu-button" @click="toggleSortOrder">
               <ion-icon :icon="sortIcon"></ion-icon>
-            </ion-button>
+            </div>
 
-            <ion-button ref="ellipsisButtonRef" @click="toggleClearMenu">
+            <div class="header-menu-button" ref="ellipsisButtonRef" @click="toggleClearMenu">
               <ion-icon :icon="ellipsisVertical"></ion-icon>
-            </ion-button>
+            </div>
 
           </ion-buttons>
         </ion-toolbar>
       </ion-header>
       <ion-content>
         <ion-list class="search-history">
-          <ion-item class="search-history-item" v-for="(link, index) in searchHistory" :key="index">
-            <ion-label>
-              <h2>{{ link }}</h2>
-            </ion-label>
-            <ion-buttons slot="end">
-              <ion-button @click="copyToClipboard(link)">
+          <div class="search-history-item" v-for="(link, index) in searchHistory" :key="index">
+            <div class="search-history-item__title">
+              {{ link }}
+            </div>
+            <div class="search-history-item__buttons">
+              <div class="header-menu-button small" @click="copyToClipboard(link)">
                 <ion-icon :icon="copyIcon"></ion-icon>
-              </ion-button>
-              <ion-button @click="removeFromHistory(index)">
+              </div>
+              <div class="header-menu-button small" @click="removeFromHistory(index)">
                 <ion-icon :icon="trash"></ion-icon>
-              </ion-button>
-            </ion-buttons>
-          </ion-item>
+              </div>
+            </div>
+          </div>
         </ion-list>
       </ion-content>
     </ion-menu>
@@ -224,7 +224,7 @@ const canvasApp = () => {
     if(searchStore.currentTheme === "dark") {
       ctx.fillStyle = 'rgba(0,0,0,0.05)';
     } else {
-      ctx.fillStyle = 'rgba(255,255,255,0.05)';
+      ctx.fillStyle = 'rgba(240,255,255,0.05)';
     }
     ctx.fillRect(0, 0, w, h);
     ctx.fillStyle = '#0f0'; // Зеленый цвет текста
@@ -254,9 +254,9 @@ const updateMenuPosition = () => {
   // @ts-ignore
   const buttonRect = ellipsisButtonRef.value.$el.getBoundingClientRect();
   // @ts-ignore
-  clearMenuRef.value.style.top = `${buttonRect.bottom}px`;
+  clearMenuRef.value.style.top = `${buttonRect.bottom + 100}px`;
   // @ts-ignore
-  clearMenuRef.value.style.left = `${buttonRect.left - 120}px`;
+  clearMenuRef.value.style.left = `${buttonRect.left}px`;
 };
 
 const toggleClearMenu = () => {
@@ -418,7 +418,24 @@ const copyToClipboard = async (text: string) => {
 ion-button {
   --background: var(--ion-background-color); /* Тёмный фон для кнопки */
   --color: var(--ion-color-step-50); /* Цвет текста/иконок кнопки */
-  --border-radius: 4px; /* Скругление углов кнопки */
+  --border-radius: 10px; /* Скругление углов кнопки */
+  --box-shadow: var(--ion-box-shadow);
+}
+
+.header-menu-button {
+  margin: 0 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  width: 35px;
+  height: 35px;
+  box-shadow: var(--ion-box-shadow-menu);
+
+  &.small {
+    width: 28px;
+    height: 28px;
+  }
 }
 
 /* Стиль для кнопок в тулбаре */
@@ -481,6 +498,8 @@ ion-footer {
 
 .clear-menu {
   position: absolute;
+  top: 45px;
+  left: 155px;
   border-radius: 5px;
   z-index: 99999;
   width: 150px;
@@ -517,7 +536,7 @@ ion-title {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: rgba(0, 0, 0, 0.5); /* Полупрозрачный фон */
+  background-color: var(--ion-background-color); /* Полупрозрачный фон */
   z-index: 1000; /* Убедитесь, что спиннер находится над всеми элементами */
 }
 
@@ -558,16 +577,24 @@ ion-header {
 
 /* Стилизация элементов списка истории поиска */
 .search-history-item {
-  position: relative;
-  --padding-start: 15px;
-  --min-height: 50px;
-  --border-radius: 8px;
-  margin-bottom: 10px;
-  width: 100%; /* Устанавливаем ширину на auto или 100% */
-  padding: 0 10px;
-  --background: var(--ion-input-item); /* Тёмный фон для элементов списка */
-  --color: var(--ion-text-color); /* Светлый текст */
-  --border-color: var(--ion-border-color); /* Цвет границы элементов списка */
+  display: flex;
+  align-items: center;
+  padding: 10px 15px;
+  margin: 0 10px 10px;
+  border-radius: 5px;
+  background-color: var(--ion-color-history-item);
+  /* Цвет границы элементов списка */
+
+  .search-history-item__title {
+    white-space: nowrap; /* Запрещаем перенос строк */
+    overflow: hidden; /* Обрезаем все, что не помещается в область */
+    padding: 5px; /* Поля вокруг текста */
+    text-overflow: ellipsis; /* Добавляем многоточие */
+  }
+
+  .search-history-item__buttons {
+    display: flex;
+  }
 }
 
 /* Стилизация иконок в элементах списка */

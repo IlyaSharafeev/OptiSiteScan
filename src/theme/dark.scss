@@ -132,13 +132,19 @@ body.dark {
  */
 
 .md body.dark {
-  --ion-background-color: #121212;
+  --ion-background-color: rgba(18, 18, 18, 0.84);
   --ion-background-color-rgb: 18, 18, 18;
 
   --ion-text-color: #4caf50;
   --ion-text-color-rgb: 255, 255, 255;
 
   --ion-border-color: #222222;
+  --ion-color-moon-dark: rgb(43, 42, 42, 100%);
+  --ion-color-moon-light: rgb(245, 245, 245);
+  --ion-color-history-item: #313131;
+
+  --ion-box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
+  --ion-box-shadow-menu: rgba(73, 73, 73, 0.25) 0px 4px 8px -2px, rgba(114, 114, 114, 0.08) 0px 0px 0px 1px;
 
   --ion-color-step-50: #1e1e1e;
   --ion-color-step-100: #2a2a2a;

@@ -266,7 +266,7 @@ ion-button {
   position: fixed;
   right: 20px;
   bottom: 20px;
-  color: var(--ion-text-color);
+  color: azure;
   width: 56px;
   height: 56px;
   display: flex;

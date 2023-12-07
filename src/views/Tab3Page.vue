@@ -17,8 +17,8 @@
         </ion-toolbar>
       </ion-header>
       <ion-content>
-        <ion-item>
-          <ion-toggle color="light" @ion-change="toggleDarkMode" :checked="searchStore.currentTheme === 'light'"></ion-toggle>
+        <ion-item class="toggle-theme">
+          <ToggleButton/>
         </ion-item>
         <ion-item lines="none" class="logout-button" @click="logout">
           <ion-label color="danger">Exit</ion-label>
@@ -28,9 +28,7 @@
 
     <!-- Основное содержимое страницы -->
     <ion-content  id="main-content" class="ion-padding">
-        <div class="bookmark-button" @click="openMenu">
-<!--          <ion-icon class="bookmark-icon" :icon="lockClosed"></ion-icon>-->
-        </div>
+        <div class="bookmark-button" @click="openMenu"></div>
       <PDFViewerComponent v-if="searchStore.searchData"/>
       <div v-else class="no-data">
         <div>There is no data about your site yet, but you can <span @click="router.push('/')">add it</span></div>
@@ -53,7 +51,6 @@ import {
   IonInput,
   IonIcon,
   IonButton,
-  IonToggle,
   IonButtons,
   menuController
 } from '@ionic/vue';
@@ -61,7 +58,7 @@ import {pencilOutline, checkmarkOutline, lockClosed} from 'ionicons/icons';
 import PDFViewerComponent from "@/components/PDFViewerComponent.vue";
 import { useSearchStore } from "@/stores/main";
 import {useRouter} from "vue-router";
-import {Preferences} from "@capacitor/preferences";
+import ToggleButton from "@/components/ToggleButton.vue";
 
 const editMode = ref(false);
 const searchStore = useSearchStore();
@@ -74,7 +71,6 @@ onMounted(async () => {
   await searchStore.getSearchData();
   userName.value = await searchStore.getName()
 })
-console.log(searchStore.nameUser);
 
 const openMenu = () => {
   menuController.open('sideMenu');
@@ -101,31 +97,15 @@ const sendEmail = () => {
 const logout = () => {
   searchStore.logout();
 };
-
-const toggleDarkMode = async (event) => {
-  if(event.detail.checked) {
-    document.body.setAttribute('color-theme', 'light');
-    document.body.classList.remove('dark');
-    document.body.classList.add('light');
-    searchStore.currentTheme = 'light';
-    await Preferences.set({
-      key: 'theme',
-      value: 'light',
-    });
-  } else {
-    document.body.setAttribute('color-theme', 'dark');
-    document.body.classList.remove('light');
-    document.body.classList.add('dark');
-    searchStore.currentTheme = 'dark';
-    await Preferences.set({
-      key: 'theme',
-      value: 'dark',
-    });
-  }
-};
 </script>
 
-<style scoped>
+<style scoped lang="scss">
+.toggle-theme {
+  position: absolute;
+  width: 100%;
+  bottom: 49px;
+}
+
 .logout-button {
   position: absolute;
   bottom: 0;
@@ -133,6 +113,7 @@ const toggleDarkMode = async (event) => {
   font-size: 16px;
   letter-spacing: 2px;
   text-align: center;
+  box-shadow: var(--ion-box-shadow);
   --background: var(--ion-item-background); /* Темный фон для кнопки выхода */
 }
 

@@ -132,13 +132,19 @@
    */
 
   .md body.light {
-    --ion-background-color: #ffffff; /* Было #ffffff */
+    --ion-background-color: rgba(255, 255, 255, 0.51); /* Было #ffffff */
     --ion-background-color-rgb: 237, 237, 237; /* Было 18, 18, 18 */
 
     --ion-text-color: #008604;
     --ion-text-color-rgb: 0, 0, 0; /* Было 255, 255, 255 */
 
     --ion-border-color: #dddddd; /* Было #222222 */
+    --ion-color-moon-dark: #DDDDDD;
+    --ion-color-moon-light: rgb(43, 42, 42, 100%);
+    --ion-color-history-item: azure;
+
+    --ion-box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
+    --ion-box-shadow-menu: rgba(9, 30, 66, 0.25) 0px 4px 8px -2px, rgba(9, 30, 66, 0.08) 0px 0px 0px 1px;
 
     --ion-color-step-50: #e1e1e1; /* Было #1e1e1e */
     --ion-color-step-100: #d5d5d5; /* Было #2a2a2a */
