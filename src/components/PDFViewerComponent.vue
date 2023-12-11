@@ -4,15 +4,7 @@
       <span class="button-82-shadow"></span>
       <span class="button-82-edge"></span>
       <span class="button-82-front text">
-         Generate PDF
-      </span>
-    </button>
-
-    <button class="button-82-pushable" @click="downloadPDF" v-if="pdfSrc" :disabled="!pdfSrc" role="button">
-      <span class="button-82-shadow"></span>
-      <span class="button-82-edge"></span>
-      <span class="button-82-front text">
-         Download PDF
+         Create a PDF
       </span>
     </button>
 
@@ -52,14 +44,11 @@
 <script setup>
 import {jsPDF} from "jspdf";
 import autoTable from "jspdf-autotable";
-import {Chart} from "chart.js";
 import {computed, onMounted, ref} from 'vue';
 import {useSearchStore} from "@/stores/main";
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { Capacitor } from '@capacitor/core';
-import { Browser } from '@capacitor/browser';
-import {fileTrayFull, download, send} from "ionicons/icons";
-import {IonIcon, IonToast} from "@ionic/vue";
+import {IonToast} from "@ionic/vue";
 import { LocalNotifications } from '@capacitor/local-notifications';
 import {Share} from "@capacitor/share";
 import { FileOpener } from '@awesome-cordova-plugins/file-opener';
@@ -73,11 +62,8 @@ const toastMessage = ref("");
 
 const pdfData = computed(() => searchStore.searchData);
 onMounted(async () => {
-  console.log("updated code");
   await searchStore.getSearchData();
 })
-
-let doc = new jsPDF();
 
 const generatePDF = async (data) => {
   console.log("click on generatePDF");
@@ -115,37 +101,12 @@ const generatePDF = async (data) => {
     styles: { fontSize: 8, cellPadding: 1, textColor: 50 }
   });
 
-  // Генерация графиков (пример)
-  // Примечание: Генерация графиков в PDF может быть сложной. Обычно это включает рендеринг графика в канвас, а затем преобразование его в изображение для вставки в PDF.
 
   const chartCanvas = document.createElement('canvas');
   chartCanvas.width = 400;
   chartCanvas.height = 200;
   const ctx = chartCanvas.getContext('2d');
 
-  // Создаем график
-  // new Chart(ctx, {
-  //   type: 'bar', // Тип графика
-  //   data: {
-  //     labels: auditTableData.map(item => item[0]), // Названия аудитов
-  //     datasets: [{
-  //       label: 'Audit Score',
-  //       data: auditTableData.map(item => item[1]), // Значения аудитов
-  //       backgroundColor: 'rgba(60, 142, 185, 0.5)'
-  //     }]
-  //   },
-  //   options: {
-  //     scales: {
-  //       yAxes: [{ ticks: { beginAtZero: true } }]
-  //     }
-  //   }
-  // });
-
-  // Конвертируем канвас в изображение и добавляем в PDF
-  // const chartImage = chartCanvas.toDataURL('image/png');
-  // doc.addImage(chartImage, 'PNG', 10, doc.autoTable.previous.finalY + 10, 190, 80);
-
-  // Создание Blob из сгенерированного PDF
 
   const pdfOutput = doc.output(); // Получаем PDF как строку
   const blobString = new Blob([pdfOutput], { type: 'application/pdf' });
@@ -154,22 +115,9 @@ const generatePDF = async (data) => {
   toastMessage.value = "PDF has been generate!";
   showToast.value = true;
 
-  // const blob = doc.output("blob");
-  // pdfSrc.value = URL.createObjectURL(blob);
   pdfFormData.value = new FormData();
   pdfFormData.value.append('file', doc.output("blob"), 'report.pdf');
-};
 
-const sharePDF = async () => {
-  // Использование Share API для открытия файла в системном пикере
-  await Share.share({
-    title: 'Download PDF',
-    url: savedFile.value.uri,
-    dialogTitle: 'Save PDF'
-  });
-}
-
-const downloadPDF = async () => {
   if (Capacitor.isNativePlatform()) {
     // Преобразование pdfSrc.value в Blob
     const blob = new Blob([pdfSrc.value], { type: 'application/pdf' });
@@ -211,7 +159,16 @@ const downloadPDF = async () => {
   }
 };
 
-const openPDF = async () => {
+const sharePDF = async () => {
+  // Использование Share API для открытия файла в системном пикере
+  await Share.share({
+    title: 'Download PDF',
+    url: savedFile.value.uri,
+    dialogTitle: 'Save PDF'
+  });
+}
+
+const openPDF = async (filePath, fileMIMEType) => {
   if (Capacitor.isNativePlatform() && savedFile.value) {
     try {
       await FileOpener.open(savedFile.value.uri, 'application/pdf');
