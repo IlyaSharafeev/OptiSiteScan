@@ -17,7 +17,13 @@
         </ion-toolbar>
       </ion-header>
       <ion-content>
-        <ion-item class="toggle-theme">
+        <ion-item class="ion-no-padding ion-text-center">
+          <PDFViewerComponent v-if="searchStore.searchData"/>
+          <div v-else class="no-data">
+            <div>There is no data about your site yet, but you can <span @click="router.push('/')">add it</span></div>
+          </div>
+        </ion-item>
+        <ion-item class="toggle-theme ion-no-padding">
           <ToggleButton/>
         </ion-item>
         <ion-item lines="none" class="logout-button" @click="logout">
@@ -29,10 +35,6 @@
     <!-- Основное содержимое страницы -->
     <ion-content  id="main-content" class="ion-padding">
         <div class="bookmark-button" @click="openMenu"></div>
-      <PDFViewerComponent v-if="searchStore.searchData"/>
-      <div v-else class="no-data">
-        <div>There is no data about your site yet, but you can <span @click="router.push('/')">add it</span></div>
-      </div>
     </ion-content>
   </ion-page>
 </template>

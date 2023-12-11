@@ -253,7 +253,7 @@ label {
 .day-night-cont .the-sun{
   display: block;
   position: absolute;
-  left: 10px;
+  left: 60px;
   top: 12px;
   height: 20px;
   width: 20px;
@@ -265,7 +265,7 @@ label {
 .day-night-cont .the-moon {
   display: block;
   position: absolute;
-  right: 8px;
+  right: 60px;
   top: 12px;
   height: 20px;
   width: 20px;

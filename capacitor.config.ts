@@ -10,6 +10,11 @@ const config: CapacitorConfig = {
       serverClientId: '105905256008-oqlphilb39m0ikris3jqi2l1gel8obmt.apps.googleusercontent.com',
       forceCodeForRefreshToken: true,
     },
+    LocalNotifications: {
+      smallIcon: "ic_stat_icon_config_sample",
+      iconColor: "#488AFF",
+      sound: "beep.wav",
+    },
   },
   server: {
     androidScheme: 'https',

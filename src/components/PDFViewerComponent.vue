@@ -8,7 +8,7 @@
       </span>
     </button>
 
-    <button class="button-82-pushable" @click="downloadPDF" :disabled="!pdfSrc" role="button">
+    <button class="button-82-pushable" @click="downloadPDF" v-if="pdfSrc" :disabled="!pdfSrc" role="button">
       <span class="button-82-shadow"></span>
       <span class="button-82-edge"></span>
       <span class="button-82-front text">
@@ -16,13 +16,30 @@
       </span>
     </button>
 
-    <button class="button-82-pushable" @click="sendPDF" :disabled="!pdfSrc" role="button">
+    <button class="button-82-pushable" @click="sendPDF" v-if="pdfFormData" :disabled="!pdfSrc" role="button">
       <span class="button-82-shadow"></span>
       <span class="button-82-edge"></span>
       <span class="button-82-front text">
-         Send PDF
+         Get pdf in the email
       </span>
     </button>
+
+    <button class="button-82-pushable" @click="sharePDF" v-if="savedFile" :disabled="!pdfSrc" role="button">
+      <span class="button-82-shadow"></span>
+      <span class="button-82-edge"></span>
+      <span class="button-82-front text">
+         Share PDF
+      </span>
+    </button>
+
+    <button class="button-82-pushable" @click="openPDF" v-if="savedFile" :disabled="!pdfSrc" role="button">
+      <span class="button-82-shadow"></span>
+      <span class="button-82-edge"></span>
+      <span class="button-82-front text">
+    Open PDF
+  </span>
+    </button>
+
     <ion-toast
         :is-open="showToast"
         :message="toastMessage"
@@ -43,10 +60,14 @@ import { Capacitor } from '@capacitor/core';
 import { Browser } from '@capacitor/browser';
 import {fileTrayFull, download, send} from "ionicons/icons";
 import {IonIcon, IonToast} from "@ionic/vue";
+import { LocalNotifications } from '@capacitor/local-notifications';
+import {Share} from "@capacitor/share";
+import { FileOpener } from '@awesome-cordova-plugins/file-opener';
 
 const searchStore = useSearchStore();
 const pdfSrc = ref(null);
 const pdfFormData = ref(null);
+const savedFile = ref(null);
 const showToast = ref(false);
 const toastMessage = ref("");
 
@@ -125,6 +146,7 @@ const generatePDF = async (data) => {
   // doc.addImage(chartImage, 'PNG', 10, doc.autoTable.previous.finalY + 10, 190, 80);
 
   // Создание Blob из сгенерированного PDF
+
   const pdfOutput = doc.output(); // Получаем PDF как строку
   const blobString = new Blob([pdfOutput], { type: 'application/pdf' });
   pdfSrc.value = blobString;
@@ -132,35 +154,52 @@ const generatePDF = async (data) => {
   toastMessage.value = "PDF has been generate!";
   showToast.value = true;
 
-  const blob = doc.output("blob");
-  pdfSrc.value = URL.createObjectURL(blob);
+  // const blob = doc.output("blob");
+  // pdfSrc.value = URL.createObjectURL(blob);
   pdfFormData.value = new FormData();
-  pdfFormData.value.append('file', blob, 'report.pdf');
+  pdfFormData.value.append('file', doc.output("blob"), 'report.pdf');
 };
+
+const sharePDF = async () => {
+  // Использование Share API для открытия файла в системном пикере
+  await Share.share({
+    title: 'Download PDF',
+    url: savedFile.value.uri,
+    dialogTitle: 'Save PDF'
+  });
+}
 
 const downloadPDF = async () => {
   if (Capacitor.isNativePlatform()) {
+    // Преобразование pdfSrc.value в Blob
+    const blob = new Blob([pdfSrc.value], { type: 'application/pdf' });
 
+    // Получаем данные Blob в формате base64
     const reader = new FileReader();
-    reader.onloadend = () => {
+    reader.onloadend = async () => {
       const base64Data = reader.result.split(',')[1];
-      Filesystem.writeFile({
+
+      // Сохраняем PDF во временной директории
+      savedFile.value = await Filesystem.writeFile({
         path: 'report.pdf',
         data: base64Data,
         directory: Directory.Documents
-      }).then(async (writeFileResult) => {
-        console.log("File written successfully: ", writeFileResult);
+      });
 
-        // Путь к файлу
-        const path = writeFileResult.uri;
-
-        // Открытие файла в браузере
-        await Browser.open({ url: path });
-      }).catch(error => {
-        console.error("Error writing file: ", error);
+      // Опционально: уведомление о завершении скачивания
+      await LocalNotifications.schedule({
+        notifications: [
+          {
+            title: "Download Complete",
+            body: "Your PDF has been downloaded.",
+            id: 1,
+            schedule: { at: new Date(Date.now() + 1000 * 5) }, // 5 секунд после загрузки
+          }
+        ]
       });
     };
-    reader.readAsDataURL(pdfSrc.value);
+
+    reader.readAsDataURL(blob);
   } else {
     // Для веб-браузера
     const url = window.URL.createObjectURL(new Blob([pdfSrc.value], { type: 'application/pdf' }));
@@ -169,6 +208,18 @@ const downloadPDF = async () => {
     a.download = 'report.pdf';
     a.click();
     window.URL.revokeObjectURL(url);
+  }
+};
+
+const openPDF = async () => {
+  if (Capacitor.isNativePlatform() && savedFile.value) {
+    try {
+      await FileOpener.open(savedFile.value.uri, 'application/pdf');
+    } catch (error) {
+      console.error('Error opening PDF:', error);
+      toastMessage.value = "Unable to open PDF";
+      showToast.value = true;
+    }
   }
 };
 
@@ -189,8 +240,9 @@ const sendPDF = async () => {
 <style scoped>
 .pdf-buttons-container {
   display: flex;
+  width: 100%;
   justify-content: space-around;
-  margin: 20px;
+  margin: 30px 20px;
   flex-direction: column;
   gap: 40px;
 }
@@ -200,6 +252,7 @@ const sendPDF = async () => {
   border: none;
   border-radius: 5px;
   color: var(--ion-text-color);
+  letter-spacing: 2px;
   font-weight: bold;
   font-size: 18px;
   cursor: pointer;
