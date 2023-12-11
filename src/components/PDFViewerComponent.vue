@@ -65,8 +65,24 @@ onMounted(async () => {
   await searchStore.getSearchData();
 })
 
+const checkNotificationPermission = async () => {
+  const permission = await LocalNotifications.requestPermissions();
+
+  if (permission.display === 'granted') {
+    return true;
+  } else {
+    toastMessage.value = "Notifications permission not granted";
+    showToast.value = true;
+    return false;
+  }
+};
+
 const generatePDF = async (data) => {
-  console.log("click on generatePDF");
+  const hasPermission = await checkNotificationPermission();
+  if (!hasPermission) {
+    return; // Останавливаем дальнейшее выполнение функции, если разрешения нет
+  }
+
   const doc = new jsPDF();
   doc.setFontSize(18);
   doc.setTextColor(60, 142, 185);
@@ -112,11 +128,11 @@ const generatePDF = async (data) => {
   const blobString = new Blob([pdfOutput], { type: 'application/pdf' });
   pdfSrc.value = blobString;
 
-  toastMessage.value = "PDF has been generate!";
+  toastMessage.value = "PDF has been create!";
   showToast.value = true;
 
   pdfFormData.value = new FormData();
-  pdfFormData.value.append('file', doc.output("blob"), 'report.pdf');
+  pdfFormData.value.append('file', doc.output("blob"), 'site-analytics.pdf');
 
   if (Capacitor.isNativePlatform()) {
     // Преобразование pdfSrc.value в Blob
@@ -128,23 +144,31 @@ const generatePDF = async (data) => {
       const base64Data = reader.result.split(',')[1];
 
       // Сохраняем PDF во временной директории
-      savedFile.value = await Filesystem.writeFile({
-        path: 'report.pdf',
-        data: base64Data,
-        directory: Directory.Documents
-      });
+      try {
+        savedFile.value = await Filesystem.writeFile({
+          path: 'report.pdf',
+          data: base64Data,
+          directory: Directory.Data
+        });
 
-      // Опционально: уведомление о завершении скачивания
-      await LocalNotifications.schedule({
-        notifications: [
-          {
-            title: "Download Complete",
-            body: "Your PDF has been downloaded.",
-            id: 1,
-            schedule: { at: new Date(Date.now() + 1000 * 5) }, // 5 секунд после загрузки
-          }
-        ]
-      });
+        // Опционально: уведомление о завершении скачивания
+        await LocalNotifications.schedule({
+          notifications: [
+            {
+              title: "Opti Scan",
+              body: "Your PDF has been created.",
+              iconColor: "#7bf588",
+              id: 1,
+              actionTypeId: "OPEN_PDF",
+              extra: { filePath: savedFile.value.uri }
+            }
+          ]
+        });
+      } catch (error) {
+        console.error('Error writing file:', error);
+        toastMessage.value = "Error writing file";
+        showToast.value = true;
+      }
     };
 
     reader.readAsDataURL(blob);
