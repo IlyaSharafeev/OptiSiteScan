@@ -2,32 +2,20 @@
   <ion-page>
     <!-- Боковое меню с функционалом -->
     <ion-menu side="end" menuId="sideMenu" contentId="main-content">
-      <ion-header>
-        <ion-toolbar>
-          <ion-title v-if="!editMode">{{userName}}</ion-title>
-          <ion-input v-else v-model="userNameEditable" placeholder="Введите имя" />
-          <ion-buttons slot="end">
-            <ion-button v-if="!editMode" @click="enableEditMode">
-              <ion-icon :icon="pencilOutline"></ion-icon>
-            </ion-button>
-            <ion-button v-if="editMode" @click="confirmEdit">
-              <ion-icon :icon="checkmarkOutline"></ion-icon>
-            </ion-button>
-          </ion-buttons>
-        </ion-toolbar>
-      </ion-header>
       <ion-content>
         <ion-item class="ion-no-padding ion-text-center">
+          <ion-item class="toggle-theme ion-no-padding">
+            <ToggleButton/>
+          </ion-item>
           <PDFViewerComponent v-if="searchStore.searchData"/>
           <div v-else class="no-data">
             <div>There is no data about your site yet, but you can <span @click="router.push('/')">add it</span></div>
           </div>
         </ion-item>
-        <ion-item class="toggle-theme ion-no-padding">
-          <ToggleButton/>
-        </ion-item>
         <ion-item lines="none" class="logout-button" @click="logout">
-          <ion-label color="danger">Exit</ion-label>
+          <ion-label color="danger">
+            <ion-icon :icon="exitSharp" size="medium"></ion-icon>
+          </ion-label>
         </ion-item>
       </ion-content>
     </ion-menu>
@@ -56,7 +44,7 @@ import {
   IonButtons,
   menuController
 } from '@ionic/vue';
-import {pencilOutline, checkmarkOutline, lockClosed} from 'ionicons/icons';
+import {pencilOutline, checkmarkOutline, lockClosed, exit, exitOutline, exitSharp} from 'ionicons/icons';
 import PDFViewerComponent from "@/components/PDFViewerComponent.vue";
 import { useSearchStore } from "@/stores/main";
 import {useRouter} from "vue-router";
@@ -105,7 +93,8 @@ const logout = () => {
 .toggle-theme {
   position: absolute;
   width: 100%;
-  bottom: 49px;
+  top: 0;
+  margin: 10px 0;
 }
 
 .logout-button {

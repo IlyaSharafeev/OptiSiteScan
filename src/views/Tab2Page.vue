@@ -20,6 +20,7 @@
           </ion-card-header>
           <ion-card-content v-if="auditDetails[auditRef.id]">
             <ion-progress-bar
+                class="progress-bar"
                 :value="auditDetails[auditRef.id].score"
                 :color="getProgressBarColor(auditDetails[auditRef.id].score)">
             </ion-progress-bar>
@@ -34,10 +35,11 @@
           </ion-card-header>
           <ion-card-content v-if="auditDetails[auditRef.id]">
             <ion-progress-bar
+                class="progress-bar"
                 :value="auditDetails[auditRef.id].score"
                 :color="getProgressBarColor(auditDetails[auditRef.id].score)">
             </ion-progress-bar>
-            <p v-html="linkify(auditDetails[auditRef.id].description)"></p>
+            <p v-html="linkify(auditDetails[auditRef.id].description)" class="description-analytics"></p>
           </ion-card-content>
         </ion-card>
       </div>
@@ -173,6 +175,9 @@ const getProgressBarColor = (score) => {
 </script>
 
 <style scoped>
+.progress-bar {
+  margin: 15px 0;
+}
 .segment-btn {
   letter-spacing: 3px;
   font-weight: 600;

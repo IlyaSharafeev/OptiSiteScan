@@ -16,14 +16,6 @@
       </span>
     </button>
 
-    <button class="button-82-pushable" @click="sharePDF" v-if="savedFile" :disabled="!pdfSrc" role="button">
-      <span class="button-82-shadow"></span>
-      <span class="button-82-edge"></span>
-      <span class="button-82-front text">
-         Share PDF
-      </span>
-    </button>
-
     <button class="button-82-pushable" @click="openPDF" v-if="savedFile" :disabled="!pdfSrc" role="button">
       <span class="button-82-shadow"></span>
       <span class="button-82-edge"></span>
@@ -52,6 +44,7 @@ import {IonToast} from "@ionic/vue";
 import { LocalNotifications } from '@capacitor/local-notifications';
 import {Share} from "@capacitor/share";
 import { FileOpener } from '@awesome-cordova-plugins/file-opener';
+import {Chart} from "chart.js";
 
 const searchStore = useSearchStore();
 const pdfSrc = ref(null);
@@ -78,54 +71,71 @@ const checkNotificationPermission = async () => {
 };
 
 const generatePDF = async (data) => {
+  console.log(data);
   const hasPermission = await checkNotificationPermission();
   if (!hasPermission) {
-    return; // Останавливаем дальнейшее выполнение функции, если разрешения нет
+    return;
   }
 
   const doc = new jsPDF();
+
   doc.setFontSize(18);
   doc.setTextColor(60, 142, 185);
-  doc.text("Отчет о производительности", 10, 10);
+  doc.text("Performance report", 10, 10);
 
-  // Общий обзор
   doc.setFontSize(14);
   doc.setTextColor(100, 100, 100);
-  doc.text('Общий Обзор', 10, 20);
+  doc.text('General Overview', 10, 20);
   doc.setFontSize(10);
-  doc.text(`Запрошенный URL: ${data.lighthouseResult.requestedUrl}`, 10, 30);
-  doc.text(`Финальный URL: ${data.lighthouseResult.finalUrl}`, 10, 35);
-  doc.text(`Версия Lighthouse: ${data.lighthouseResult.lighthouseVersion}`, 10, 40);
-  doc.text(`Время выполнения запроса: ${data.lighthouseResult.fetchTime}`, 10, 45);
+  doc.text(`Requested URL: ${data.lighthouseResult.requestedUrl}`, 10, 30);
+  doc.text(`Final URL: ${data.lighthouseResult.finalUrl}`, 10, 35);
+  doc.text(`Lighthouse version: ${data.lighthouseResult.lighthouseVersion}`, 10, 40);
+  doc.text(`Request fulfilment time: ${data.lighthouseResult.fetchTime}`, 10, 45);
 
-  // Детали отчета (пример с таблицей аудитов)
   doc.setFontSize(12);
   doc.setTextColor(60, 142, 185);
-  doc.text('Детали Отчета', 10, 60);
+  doc.text('Details of the Report', 10, 60);
 
-  // Создание таблицы аудитов
-  const auditTableData = Object.values(data.lighthouseResult.audits).map(audit => [
-    audit.title,
-    audit.score,
-    audit.displayValue || 'N/A'
-  ]);
+  const auditTableData = Object.values(data.lighthouseResult.audits).map(audit => {
+    const score = audit.score ? (audit.score * 100).toFixed(0) + '%' : 'N/A';
+    let scoreStyle = { textColor: 50 };
+
+    const title = doc.splitTextToSize(audit.title, 180);
+    const value = audit.displayValue ? doc.splitTextToSize(audit.displayValue, 180) : 'N/A';
+
+    if (audit.score >= 0.9) {
+      scoreStyle = { textColor: [1, 50, 32] };
+    } else if (audit.score >= 0.5) {
+      scoreStyle = { textColor: [255, 140, 0] };
+    } else if (audit.score != null) {
+      scoreStyle = { textColor: [244, 67, 54] };
+    }
+
+    return [
+      { content: title, styles: { textColor: 50 } },
+      { content: score, styles: scoreStyle },
+      { content: value, styles: { textColor: 50 } }
+    ];
+  });
 
   autoTable(doc, {
     startY: 65,
-    head: [['Audit', 'Score', 'Value']],
+    head: [['Audit', 'Score (%)', 'Value']],
     body: auditTableData,
-    styles: { fontSize: 8, cellPadding: 1, textColor: 50 }
+    theme: 'grid',
+    headStyles: { fillColor: [60, 142, 185], textColor: 255, fontStyle: 'bold' },
+    bodyStyles: { fillColor: [240, 240, 240] },
+    alternateRowStyles: { fillColor: [220, 220, 220] },
+    styles: { cellPadding: 2, fontSize: 10 }
   });
-
 
   const chartCanvas = document.createElement('canvas');
   chartCanvas.width = 400;
   chartCanvas.height = 200;
   const ctx = chartCanvas.getContext('2d');
 
-
-  const pdfOutput = doc.output(); // Получаем PDF как строку
-  const blobString = new Blob([pdfOutput], { type: 'application/pdf' });
+  const pdfOutput = doc.output();
+  const blobString = new Blob([pdfOutput], {type: 'application/pdf; charset=utf-8'});
   pdfSrc.value = blobString;
 
   toastMessage.value = "PDF has been create!";
@@ -135,23 +145,19 @@ const generatePDF = async (data) => {
   pdfFormData.value.append('file', doc.output("blob"), 'site-analytics.pdf');
 
   if (Capacitor.isNativePlatform()) {
-    // Преобразование pdfSrc.value в Blob
-    const blob = new Blob([pdfSrc.value], { type: 'application/pdf' });
+    const blob = new Blob([pdfSrc.value], {type: 'application/pdf'});
 
-    // Получаем данные Blob в формате base64
     const reader = new FileReader();
     reader.onloadend = async () => {
       const base64Data = reader.result.split(',')[1];
 
-      // Сохраняем PDF во временной директории
       try {
         savedFile.value = await Filesystem.writeFile({
-          path: 'report.pdf',
+          path: 'analytics opti-scan.pdf',
           data: base64Data,
           directory: Directory.Data
         });
 
-        // Опционально: уведомление о завершении скачивания
         await LocalNotifications.schedule({
           notifications: [
             {
@@ -160,10 +166,12 @@ const generatePDF = async (data) => {
               iconColor: "#7bf588",
               id: 1,
               actionTypeId: "OPEN_PDF",
-              extra: { filePath: savedFile.value.uri }
+              extra: {filePath: savedFile.value.uri}
             }
           ]
         });
+
+        console.log("PDF сохранён в: " + savedFile.value.uri);
       } catch (error) {
         console.error('Error writing file:', error);
         toastMessage.value = "Error writing file";
@@ -173,24 +181,14 @@ const generatePDF = async (data) => {
 
     reader.readAsDataURL(blob);
   } else {
-    // Для веб-браузера
-    const url = window.URL.createObjectURL(new Blob([pdfSrc.value], { type: 'application/pdf' }));
+    const url = window.URL.createObjectURL(new Blob([pdfSrc.value], {type: 'application/pdf'}));
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'report.pdf';
+    a.download = 'analytics opti-scan.pdf';
     a.click();
     window.URL.revokeObjectURL(url);
   }
 };
-
-const sharePDF = async () => {
-  // Использование Share API для открытия файла в системном пикере
-  await Share.share({
-    title: 'Download PDF',
-    url: savedFile.value.uri,
-    dialogTitle: 'Save PDF'
-  });
-}
 
 const openPDF = async (filePath, fileMIMEType) => {
   if (Capacitor.isNativePlatform() && savedFile.value) {
@@ -223,7 +221,7 @@ const sendPDF = async () => {
   display: flex;
   width: 100%;
   justify-content: space-around;
-  margin: 30px 20px;
+  margin: 90px 30px 20px;
   flex-direction: column;
   gap: 40px;
 }
@@ -247,15 +245,6 @@ const sendPDF = async () => {
 
 .pdf-button i {
   margin-right: 5px;
-}
-
-.pdf-button.generate {
-}
-
-.pdf-button.download {
-}
-
-.pdf-button.send {
 }
 
 .pdf-button:disabled {
@@ -301,10 +290,10 @@ const sendPDF = async () => {
   border-radius: 12px;
   background: linear-gradient(
       to left,
-      hsl(340deg 100% 16%) 0%,
-      hsl(340deg 100% 32%) 8%,
-      hsl(340deg 100% 32%) 92%,
-      hsl(340deg 100% 16%) 100%
+      hsl(157, 100%, 16%) 0%,
+      hsl(164, 100%, 32%) 8%,
+      hsl(159, 100%, 32%) 92%,
+      hsl(159, 100%, 16%) 100%
   );
 }
 
@@ -314,8 +303,9 @@ const sendPDF = async () => {
   padding: 12px 27px;
   border-radius: 12px;
   font-size: 1.1rem;
+  letter-spacing: 1px;
   color: white;
-  background: hsl(345deg 100% 47%);
+  background: var(--ion-text-color);
   will-change: transform;
   transform: translateY(-4px);
   transition:
