@@ -1,5 +1,5 @@
 <template>
-  <div class="spinner-container">
+  <div class="spinner-container" @touchstart.prevent @touchend.prevent @touchmove.prevent>
     <div class="loader"></div>
   </div>
 </template>
@@ -15,9 +15,17 @@
   align-items: center;
   height: 100vh; /* Высота контейнера установлена на 100% видимой части экрана */
   width: 100vw; /* Ширина контейнера установлена на 100% видимой части экрана */
+  position: fixed; /* Фиксированное позиционирование */
+  top: 0;
+  left: 0;
+  z-index: 99999999999999999999; /* Убедитесь, что оверлей находится выше всех других элементов */
+  background-color: rgba(0, 0, 0, 0.5); /* Полупрозрачный черный фон */
+  pointer-events: all; /* Отключить взаимодействия с элементами под оверлеем */
+  touch-action: auto;
 }
 
 .loader {
+  pointer-events: all; /* Включить взаимодействие только для спиннера */
   z-index: 99999;
   color: #ffffff;
   font-size: 70px;

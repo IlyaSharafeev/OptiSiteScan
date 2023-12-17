@@ -126,6 +126,12 @@
   ]"
     ></ion-alert>
 
+    <div v-if="isImageCaptured" class="image-crop-overlay">
+      <img v-if="capturedImage" :src="'data:image/jpeg;base64,' + capturedImage.base64String" class="full-screen-image" ref="imageElementRef" alt="image for captured">
+      <ion-button class="button-crop" @click="cropAndProcessImage">Crop and Process</ion-button>
+<!--      <ion-button @click="cancelCrop">Cancel</ion-button>-->
+    </div>
+
   </ion-page>
 </template>
 
@@ -164,6 +170,8 @@ import {ref, onMounted, computed, nextTick, onUnmounted} from 'vue';
 import { menuController } from '@ionic/vue';
 import { IonToast } from '@ionic/vue';
 import {onClickOutside} from "@vueuse/core";
+import Cropper from 'cropperjs';
+import 'cropperjs/dist/cropper.min.css';
 
 const router = useRouter();
 
@@ -188,6 +196,11 @@ const ellipsisButtonRef = ref<HTMLElement | null>(null); // Ссылка на к
 const showConfirmClear = ref(false);
 const canvasRef = ref(null) as any; // ref для доступа к элементу canvas
 const canvasKey = ref(0);
+const isImageCaptured = ref(false);
+const capturedImage = ref(null);
+const cropper = ref(null);
+const imageElementRef = ref(null);
+
 
 const initializeCanvas = () => {
   nextTick(() => {
@@ -353,17 +366,23 @@ const scanLink = () => {
   }
 }
 
-const openCamera = async () => {
-  try {
-    const photo = await Camera.getPhoto({
-      quality: 90,
-      allowEditing: false,
-      resultType: CameraResultType.Base64
-    });
+const blobToBase64 = (blob) => {
+  return new Promise((resolve, _) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result);
+    reader.readAsDataURL(blob);
+  });
+}
 
-    isLoading.value = true; // Включаем спиннер
+const cropAndProcessImage = () => {
+  if (!cropper.value) {
+    console.error('Cropper is not initialized');
+    return;
+  }
 
-    const base64Image = photo.base64String;
+  const croppedCanvas = cropper.value.getCroppedCanvas();
+  croppedCanvas.toBlob(async (blob) => {
+    const base64Image = await blobToBase64(blob);
 
     const response = await axios.post(
         'https://vision.googleapis.com/v1/images:annotate?key=AIzaSyDXnQe-nYOsKG4v2-AnZ-Tmu6-G5Da-5g4',
@@ -371,7 +390,7 @@ const openCamera = async () => {
           requests: [
             {
               image: {
-                content: base64Image
+                content: base64Image.split(',')[1]
               },
               features: [{ type: 'TEXT_DETECTION' }]
             }
@@ -379,19 +398,51 @@ const openCamera = async () => {
         }
     );
 
-    // Проверяем, есть ли данные о распознавании текста в ответе
-    if (response.data.responses[0] && response.data.responses[0].fullTextAnnotation) {
-      const detectedText = response.data.responses[0].fullTextAnnotation.text;
-      inputData.value = detectedText; // Обновляем поле ввода
-    } else {
-      console.error('Текст не обнаружен');
-      inputData.value = ''; // Очищаем поле ввода
-    }
-  } catch (err) {
-    console.error('Ошибка при использовании камеры или при распознавании текста:', err);
-  } finally {
-    isLoading.value = false; // Выключаем спиннер
+      if (response.data.responses[0] && response.data.responses[0].fullTextAnnotation) {
+        const detectedText = response.data.responses[0].fullTextAnnotation.text;
+        inputData.value = detectedText; // Обновляем поле ввода
+      } else {
+        console.error('Текст не обнаружен');
+        inputData.value = ''; // Очищаем поле ввода
+      }
+  });
+  isImageCaptured.value = false;
+};
+
+const initCropper = () => {
+  console.log("Initializing Cropper");
+  if (imageElementRef.value) {
+    cropper.value = new Cropper(imageElementRef.value, {
+      aspectRatio: 16 / 9,
+      // ... остальные опции ...
+    });
+  } else {
+    console.error("Image element is not found");
   }
+};
+
+const openCamera = async () => {
+  try {
+    capturedImage.value = await Camera.getPhoto({
+      quality: 90,
+      allowEditing: false,
+      resultType: CameraResultType.Base64
+    });
+
+    isImageCaptured.value = true;
+    console.log(capturedImage.value);
+
+    await nextTick(() => {
+      initCropper();
+    });
+
+    isLoading.value = true; // Включаем спиннер
+
+    } catch (err) {
+      console.error('Ошибка при использовании камеры или при распознавании текста:', err);
+    } finally {
+      isLoading.value = false; // Выключаем спиннер
+    }
 };
 
 const copyToClipboard = async (text: string) => {
@@ -405,6 +456,36 @@ const copyToClipboard = async (text: string) => {
 </script>
 
 <style scoped>
+.image-crop-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.86);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  pointer-events: all;
+  touch-action: auto;
+}
+
+.full-screen-image {
+  position: absolute;
+  top: 25px;
+  max-width: 90%;
+  max-height: 90%;
+  margin: 0 auto; /* Центрирование изображения */
+  border: 1px solid white; /* Добавляем границу для лучшего визуального восприятия */
+}
+
+.button-crop {
+  position: absolute;
+  bottom: 25px;
+}
+
 .canvas-matrix {
   position: absolute;
   filter: blur(0px);
