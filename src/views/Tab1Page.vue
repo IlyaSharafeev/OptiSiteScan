@@ -197,7 +197,7 @@ const showConfirmClear = ref(false);
 const canvasRef = ref(null) as any; // ref для доступа к элементу canvas
 const canvasKey = ref(0);
 const isImageCaptured = ref(false);
-const capturedImage = ref(null);
+const capturedImage = ref(null as any);
 const cropper = ref(null);
 const imageElementRef = ref(null);
 
@@ -366,7 +366,7 @@ const scanLink = () => {
   }
 }
 
-const blobToBase64 = (blob) => {
+const blobToBase64 = (blob: Blob) => {
   return new Promise((resolve, _) => {
     const reader = new FileReader();
     reader.onloadend = () => resolve(reader.result);
@@ -380,8 +380,9 @@ const cropAndProcessImage = () => {
     return;
   }
 
+  //@ts-ignore
   const croppedCanvas = cropper.value.getCroppedCanvas();
-  croppedCanvas.toBlob(async (blob) => {
+  croppedCanvas.toBlob(async (blob: Blob) => {
     const base64Image = await blobToBase64(blob);
 
     const response = await axios.post(
@@ -390,6 +391,7 @@ const cropAndProcessImage = () => {
           requests: [
             {
               image: {
+                //@ts-ignore
                 content: base64Image.split(',')[1]
               },
               features: [{ type: 'TEXT_DETECTION' }]
@@ -412,6 +414,7 @@ const cropAndProcessImage = () => {
 const initCropper = () => {
   console.log("Initializing Cropper");
   if (imageElementRef.value) {
+    //@ts-ignore
     cropper.value = new Cropper(imageElementRef.value, {
       aspectRatio: 16 / 9,
       // ... остальные опции ...
@@ -423,6 +426,7 @@ const initCropper = () => {
 
 const openCamera = async () => {
   try {
+    //@ts-ignore
     capturedImage.value = await Camera.getPhoto({
       quality: 90,
       allowEditing: false,
